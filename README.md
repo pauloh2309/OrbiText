@@ -1,4 +1,4 @@
-# OrbiText
+ # OrbiText
 
 
 <img width="351" height="351" alt="image" src="https://github.com/user-attachments/assets/f76b0fa8-c4aa-441b-8afb-db735cd3ce98" />
@@ -9,9 +9,9 @@ Além disso, ele faz com que os estudantes, criem o hábito da leitura, pois tod
 
 Para que os usuários sintam vontade de usar o programa mais ainda, um sistema de gameficação vai ser implementado, assim, cada vez que o usuário usar uma função do programa como por exemplo: avaliar um texto lido, marcar um trecho interessante, logar todos os dias, tudo isso vai dar experiência(XP), e os usuários com maiores XP vão ficar no topo do pódio, que ficará na página principal.
 
-*REQUISITOS FUNCIONAIS*
+# REQUISITOS FUNCIONAIS
 
-*1ª VA*
+# 1ª VA
 
 RF001 - Cadastro
 
@@ -29,7 +29,7 @@ RF008- Marcar trechos interressantes
 
 RF009- Escrever observações particulares
 
-*2ª VA*
+# 2ª VA
 
 RF010 - Compartilhar anotações
 
