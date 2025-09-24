@@ -9,6 +9,7 @@ Além disso, ele faz com que os estudantes, criem o hábito da leitura, pois tod
 Para que os usuários sintam vontade de usar o programa mais ainda, um sistema de gameficação vai ser implementado, assim, cada vez que o usuário usar uma função do programa como por exemplo: avaliar um texto lido, marcar um trecho interessante, logar todos os dias, tudo isso vai dar experiência(XP), e os usuários com maiores XP vão ficar no topo do pódio, que ficará na página principal.
 
 REQUISITOS FUNCIONAIS
+
 1ª VA
 
 RF001 - Cadastro
