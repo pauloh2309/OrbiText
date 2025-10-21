@@ -17,7 +17,7 @@ RF001 - Cadastro
 
 RF002 - Login
 
-RF003 - Redirecionamento a página inicial
+RF003 - Redirecionamento a página principal
 
 RF004- Escolha de idioma
 
