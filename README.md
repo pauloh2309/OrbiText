@@ -25,11 +25,11 @@ RF005 - Ferramenta de pesquisa
 
 RF006 - Leitura na lingua nativa e traduzida para o português
 
+# 2ª VA
+
 RF008- Marcar trechos interressantes
 
 RF009- Escrever observações particulares
-
-# 2ª VA
 
 RF010 - Compartilhar anotações
 
