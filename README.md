@@ -25,18 +25,18 @@ RF005 - Ferramenta de pesquisa
 
 RF006 - Leitura na lingua nativa e traduzida para o português
 
-RF008- Marcar trechos interressantes
-
-RF009- Escrever observações particulares
-
 # 2ª VA
 
-RF010 - Compartilhar anotações
+RF007- Marcar trechos interressantes
 
-RF011 - Sistema de XP
+RF008- Escrever observações particulares
 
-RF012- Sistema de Ranking
+RF009 - Compartilhar anotações
+
+RF010 - Sistema de XP
+
+RF011- Sistema de Ranking
 
 # POSSÍVEL 3ª VA
 
-RF013- Avaliações das obras
+RF012- Avaliações das obras
