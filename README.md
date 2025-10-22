@@ -11,7 +11,7 @@ Para que os usuários sintam vontade de usar o programa mais ainda, um sistema d
 
 # REQUISITOS FUNCIONAIS
 
-# 1ª VA
+# RELEASE 1.0
 
 RF001 - Cadastro
 
@@ -25,7 +25,10 @@ RF005 - Ferramenta de pesquisa
 
 RF006 - Leitura na lingua nativa e traduzida para o português
 
-# 2ª VA
+## RELEASE 1.1
+
+
+# RELEASE 2.0
 
 RF007- Marcar trechos interressantes
 
@@ -37,6 +40,6 @@ RF010 - Sistema de XP
 
 RF011- Sistema de Ranking
 
-# POSSÍVEL 3ª VA
+# RELEASE 3.0
 
 RF012- Avaliações das obras
