@@ -26,6 +26,7 @@ def salvar_usuarios(lista_usuarios):
 usuarios = carregar_usuarios() 
 
 def validar_email(email):
+
     regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     
     if re.fullmatch(regex, email):
@@ -74,7 +75,8 @@ def verificar_senha(senha):
         print('Senha forte e aceita.')
         sleep(2)
         return True
-    
+
+
 def cadastrar_usuario(lista_usuarios):
     system('cls') 
     print("\n--- Cadastro ---")
