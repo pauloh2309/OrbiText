@@ -26,6 +26,7 @@ RF005 - Ferramenta de pesquisa
 RF006 - Leitura na lingua nativa e traduzida para o português
 
 ## RELEASE 1.1
+Dados do arquivo "lista" (textos em outros idiomas), foram colocados em arquivo chamado "dados"
 
 
 # RELEASE 2.0
