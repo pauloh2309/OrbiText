@@ -1,6 +1,6 @@
 from os import system
 from time import sleep
-import lista
+import lista 
 
 def orbitext():
     system('cls')
