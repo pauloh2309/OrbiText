@@ -435,7 +435,7 @@ def leitura_espanhol():
 ]
       return espanha
       
-def leitura_fraça():
+def leitura_frança():
       franca = [
    {
         'Titulo': 'La diplomatie à l’ère d’internet et des médias sociaux',
