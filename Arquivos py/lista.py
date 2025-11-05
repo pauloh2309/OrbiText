@@ -124,7 +124,7 @@ def leitura_espanhol():
 
 
 def leitura_frances():
-    franca = dados.leitura_fraça()
+    franca = dados.leitura_frança()
     
 
 
