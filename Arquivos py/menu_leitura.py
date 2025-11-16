@@ -126,9 +126,6 @@ def leitura_espanhol():
 def leitura_frances():
     franca = textos.leitura_fraça()
     
-
-
-
     while True:
         try:
             escolha = int(input('Escolha 1 para escolher o texto e 0 para sair: '))
