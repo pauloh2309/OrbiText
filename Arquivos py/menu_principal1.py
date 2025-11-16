@@ -1,6 +1,6 @@
 from os import system
 from time import sleep
-import lista 
+import menu_leitura 
 
 def orbitext():
     system('cls')
@@ -27,11 +27,11 @@ def orbitext():
                     continue
 
                 if opção_1 == 1:
-                    lista.leitura_ingles()
+                    menu_leitura.leitura_ingles()
                 elif opção_1 == 2:
-                    lista.leitura_espanhol()
+                    menu_leitura.leitura_espanhol()
                 elif opção_1 == 3:
-                    lista.leitura_frances()
+                    menu_leitura.leitura_frances()
                 elif opção_1 == 0:
                     break
                 else:

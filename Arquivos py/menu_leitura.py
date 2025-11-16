@@ -1,10 +1,10 @@
 from os import system
 from time import sleep
-import dados
+import textos
 
 
 def leitura_ingles():
-    english = dados.list_englesh()
+    english = textos.list_englesh()
     system('cls')
 
     while True:
@@ -65,7 +65,7 @@ def leitura_ingles():
 
 
 def leitura_espanhol():
-    espanha = dados.leitura_espanhol()
+    espanha = textos.leitura_espanhol()
 
 
     while True:
@@ -124,7 +124,7 @@ def leitura_espanhol():
 
 
 def leitura_frances():
-    franca = dados.leitura_fraça()
+    franca = textos.leitura_fraça()
     
 
 
