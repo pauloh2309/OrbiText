@@ -1,54 +1,79 @@
 from os import system
 from time import sleep
-import menu_leitura 
+import dados
 
-def orbitext():
+def limpar_tela():
     system('cls')
 
+def pausar():
+    input("\nPressione ENTER para continuar...")
+
+def exibir_menu():
+    print('=' * 100)
+    print('Escolha:')
+    print(' 1 - Leitura em outro idioma')
+    print(' 2 - Ver rankings')
+    print(' 3 - Ver suas palavras marcadas')
+    print(' 4 - Ver palavras marcadas dos outros')
+    print(' 0 - Encerrar o programa')
+    print('=' * 100)
+
+def acao_leitura():
+    limpar_tela()
+    dados.Colocar_jsson.mostrar_textos_por_idioma()
+
+def acao_rankings():
+    limpar_tela()
+    print(">>> Sistema de rankings ainda não implementado.")
+    pausar()
+
+def acao_palavras_usuario():
+    limpar_tela()
+    print(">>> Suas palavras marcadas aparecerão aqui.")
+    pausar()
+
+def acao_palavras_outros():
+    limpar_tela()
+    print(">>> Palavras marcadas por outros usuários aparecerão aqui.")
+    pausar()
+
+def acao_sair():
+    limpar_tela()
+    print("Saindo do sistema...")
+    sleep(1)
+    limpar_tela()
+    print("Agradecemos o uso do ORBITEXT")
+
+def orbitext():
+    limpar_tela()
+
     while True:
-        print('=' * 100)
-        print('Escolha:\n 1 para ir para a leitura em outro idioma\n 2 para ver os rankings\n 3 Ver as suas palavras marcadas\n 4 Ver as palavras marcadas dos outros\n 0 para encerrar o programa')
-        print('=' * 100)
+        exibir_menu()
+
         try:
-            numero = int(input("Digite o número para escolher onde você deseja ir: "))
+            numero = int(input("Digite o número da opção desejada: "))
         except ValueError:
-            system('cls')
-            print('Escolha entre os números que foram definidos')
+            limpar_tela()
+            print("Escolha apenas números válidos!")
             continue
 
         if numero == 1:
-            system('cls')
-            print('Escolha o idioma no qual se deseja fazer a leitura')
-            while True:
-                try:
-                    opção_1 = int(input('1 para inglês\n2 para espanhol\n3 para francês\n0 para sair\nEscolha: '))
-                except ValueError:
-                    print('Opção inválida')
-                    continue
-
-                if opção_1 == 1:
-                    menu_leitura.leitura_ingles()
-                elif opção_1 == 2:
-                    menu_leitura.leitura_espanhol()
-                elif opção_1 == 3:
-                    menu_leitura.leitura_frances()
-                elif opção_1 == 0:
-                    break
-                else:
-                    print('Opção inválida')
+            acao_leitura()
 
         elif numero == 2:
-            system('cls')
+            acao_rankings()
+
         elif numero == 3:
-            system('cls')
+            acao_palavras_usuario()
+
         elif numero == 4:
-            system('cls')
+            acao_palavras_outros()
+
         elif numero == 0:
-            system('cls')
-            print("Saindo do sistema...")
-            sleep(1)
-            system("cls")
-            print("Agradecemos o uso do ORBITEXT")
+            acao_sair()
             break
+
         else:
-            print("Opção inválida")
+            print("Opção inválida.")
+            sleep(1)
+            limpar_tela()

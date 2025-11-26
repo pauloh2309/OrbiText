@@ -2,182 +2,103 @@ from os import system
 from time import sleep
 import textos
 
-
-def leitura_ingles():
-    english = textos.list_englesh()
+def limpar_tela():
     system('cls')
 
+
+def escolher_opcao(msg):
+    """Lê um número e trata erro."""
+    try:
+        return int(input(msg))
+    except ValueError:
+        print("Opção inválida.")
+        return None
+
+
+def listar_textos(lista):
+    """Exibe os títulos dos textos."""
+    print("Textos disponíveis:")
+    for i, texto in enumerate(lista):
+        print(f"{i + 1} - {texto['Titulo']}")
+    print("0 - Voltar")
+
+
+def exibir_texto(texto, idioma):
+    """Exibe o texto conforme o idioma escolhido."""
+    limpar_tela()
+    print('Carregando texto...')
+    sleep(1)
+
+    print(f"Título: {texto['Titulo']}\n")
+    print(f"Referência: {texto['Referencia']}\n")
+
+    for par in texto["Paragrafos"]:
+        if idioma == "1":
+            print(par[list(par.keys())[0]], "\n")
+        elif idioma == "2":
+            print(par["portugues"], "\n")
+        elif idioma == "3":
+            keys = list(par.keys())
+            origem = keys[0]  
+            print(f"{origem.upper()}: {par[origem]}\nPT: {par['portugues']}\n")
+        else:
+            print("Opção inválida.")
+            return
+
+    input("Pressione ENTER para voltar.")
+    limpar_tela()
+
+def escolher_modo_leitura(texto):
+    """Escolhe como ler (inglês/espanhol/francês, português, lado a lado)."""
+    print("1 - Ler no idioma original")
+    print("2 - Ler em português")
+    print("3 - Ler lado a lado")
+    return input("Escolha o modo de leitura: ")
+
+def leitura_generica(lista_textos, nome_idioma):
+    limpar_tela()
+
     while True:
-        system('cls')
-        try:
-            escolha = int(input('Escolha 1 para escolher o texto e 0 para sair: '))
-        except ValueError:
-            print('Opção inválida')
+        escolha = escolher_opcao("Escolha 1 para escolher o texto e 0 para sair: ")
+        if escolha is None:
             continue
 
-        if escolha == 1:
-            print('Textos disponíveis:')
-            for i, texto in enumerate(english):
-                print(f"{i + 1} - {texto['Titulo']}")
-            print('0 - Voltar')
+        if escolha == 0:
+            print(f"Finalizando leitura em {nome_idioma}...")
+            sleep(1)
+            break
 
-            try:
-                opcao = int(input("Escolha o número do texto: "))
-            except ValueError:
-                print("Opção inválida.")
+        if escolha == 1:
+            listar_textos(lista_textos)
+
+            opcao = escolher_opcao("Escolha o número do texto: ")
+            if opcao is None:
                 continue
 
             if opcao == 0:
                 continue
 
-            if 1 <= opcao <= len(english):
-                texto_escolhido = english[opcao - 1]
+            if 1 <= opcao <= len(lista_textos):
+                texto_escolhido = lista_textos[opcao - 1]
+
                 print(f"Você escolheu: {texto_escolhido['Titulo']}")
-                print("1 - Ler em inglês")
-                print("2 - Ler em português")
-                print("3 - Ler lado a lado")
-                idioma = input("Escolha o modo de leitura: ")
-                system('cls')
-                print('Carregando texto...')
-                sleep(1)
-                print(f"Título: {texto_escolhido['Titulo']}\n")
-                print(f"Referência: {texto_escolhido['Referencia']}\n")
+                idioma = escolher_modo_leitura(texto_escolhido)
 
-                for par in texto_escolhido["Paragrafos"]:
-                    if idioma == "1":
-                        print(par["ingles"], "\n")
-                    elif idioma == "2":
-                        print(par["portugues"], "\n")
-                    elif idioma == "3":
-                        print(f"EN: {par['ingles']}\nPT: {par['portugues']}\n")
-                    else:
-                        print("Opção inválida.")
-                        break
-                input("Pressione ENTER para voltar.")
-                system('cls')
-        elif escolha == 0:
-            print('Finalizando leitura em inglês...')
-            sleep(1)
-            break
+                exibir_texto(texto_escolhido, idioma)
+
+            else:
+                print("Opção inválida.")
         else:
-            print('Opção inválida.')
-            continue
+            print("Opção inválida.")
 
+def leitura_ingles():
+    lista = textos.list_englesh()
+    leitura_generica(lista, "inglês")
 
 def leitura_espanhol():
-    espanha = textos.leitura_espanhol()
-
-
-    while True:
-        
-        try:
-            escolha = int(input('Escolha 1 para escolher o texto e 0 para sair: '))
-        except ValueError:
-            print('Opção inválida')
-            continue
-
-        if escolha == 1:
-            print('Textos disponíveis:')
-            for i, texto in enumerate (espanha):
-                print(f"{i + 1} - {texto['Titulo']}")
-            print('0 - Voltar')
-
-            try:
-                opcao = int(input("Escolha o número do texto: "))
-            except ValueError:
-                print("Opção inválida.")
-                continue
-
-            if opcao == 0:
-                continue
-
-            if 1 <= opcao <= len(espanha):
-                texto_escolhido = espanha[opcao - 1]
-                print(f"Você escolheu: {texto_escolhido['Titulo']}")
-                print("1 - Ler em espanhol")
-                print("2 - Ler em português")
-                print("3 - Ler lado a lado")
-                idioma = input("Escolha o modo de leitura: ")
-                system('cls')
-                print('Carregando texto...')
-                sleep(1)
-                print('Referencia',texto_escolhido['Referencia'])
-                for par in texto_escolhido["Paragrafos"]:
-                    if idioma == "1":
-                        print(par["espanhol"], "\n")
-                    elif idioma == "2":
-                        print(par["portugues"], "\n")
-                    elif idioma == "3":
-                        print(f"ES: {par['espanhol']}\nPT: {par['portugues']}\n")
-                    else:
-                        print("Opção inválida.")
-                        break
-                input("\nPressione ENTER para voltar.")
-                system('cls')
-        elif escolha == 0:
-            print('Finalizando leitura em espanhol...')
-            sleep(1)
-            break
-        else:
-            print('Opção inválida.')
-            continue
-
+    lista = textos.leitura_espanhol()
+    leitura_generica(lista, "espanhol")
 
 def leitura_frances():
-    franca = textos.leitura_fraça()
-    
-    while True:
-        try:
-            escolha = int(input('Escolha 1 para escolher o texto e 0 para sair: '))
-        except ValueError:
-            print('Opção inválida')
-            continue
-
-        if escolha == 1:
-            print('Textos disponíveis:')
-            for i, texto in enumerate(franca):
-                print(f"{i + 1} - {texto['Titulo']}")
-            print('0 - Voltar')
-
-            try:
-                opcao = int(input("Escolha o número do texto: "))
-            except ValueError:
-                print("Opção inválida.")
-                continue
-
-            if opcao == 0:
-                continue
-
-            if 1 <= opcao <= len(franca):
-                texto_escolhido = franca[opcao - 1]
-                print(f"Você escolheu: {texto_escolhido['Titulo']}")
-                print("1 - Ler em francês")
-                print("2 - Ler em português")
-                print("3 - Ler lado a lado")
-                idioma = input("Escolha o modo de leitura: ")
-                system('cls')
-                print('Carregando texto...')
-                sleep(1)
-                print(f"Título: {texto_escolhido['Titulo']}\n")
-                print(f"Referência: {texto_escolhido['Referencia']}\n")
-
-
-                for par in texto_escolhido["Paragrafos"]:
-                    if idioma == "1":
-                        print(par["frances"], "\n")
-                    elif idioma == "2":
-                        print(par["portugues"], "\n")
-                    elif idioma == "3":
-                        print(f"FR: {par['frances']}\nPT: {par['portugues']}\n")
-                    else:
-                        print("Opção inválida.")
-                        break
-                input("\nPressione ENTER para voltar.")
-                system('cls')
-        elif escolha == 0:
-            print('Finalizando leitura em francês...')
-            sleep(1)
-            break
-        else:
-            print('Opção inválida.')
-            continue
+    lista = textos.leitura_fraça()
+    leitura_generica(lista, "francês")

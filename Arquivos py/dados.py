@@ -991,5 +991,3 @@ class Colocar_jsson:
             print("-" * 70)
             
             input("Pressione ENTER para voltar à lista de textos.")
-
-Colocar_jsson.mostrar_textos_por_idioma()
