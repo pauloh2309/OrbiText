@@ -6,11 +6,11 @@ from util import limpar_tela
 from verificação import Verificar_dados
 import usuario
 from time import sleep
+import socket 
 
 ARQUIVO_USUARIOS = 'usuarios.json'
 
 class EmailSender:
-    """Classe auxiliar para gerenciar o envio de email de recuperação."""
     
     @staticmethod
     def enviar_codigo_recuperacao(user, email_user):
@@ -33,102 +33,99 @@ class EmailSender:
         msg['Subject'] = 'Solicitação de redefinição de senha'
         msg['From'] = 'grupoorbitext@gmail.com'
         msg['To'] = email_user
-        password = 'xugajwuhlpqqacrx' 
+        password = 'xugajwuhlpqqacrx'
         
         msg.set_content(corpo_email, subtype='html')
 
         try:
-            s = smtplib.SMTP('smtp.gmail.com', 587)
-            s.starttls()
-            s.login(msg['From'], password)
-            s.send_message(msg)
-            s.quit()
+            with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+                smtp.login('grupoorbitext@gmail.com', password)
+                smtp.send_message(msg)
+                return num_secreto, True
+        
+        except (socket.gaierror, smtplib.SMTPConnectError, TimeoutError):
+            print('\033[31mErro: Parece que você está sem internet. Verifique sua conexão e tente novamente.\033[m')
+            return num_secreto, False
             
-            print(f"\033[32mO código de recuperação foi enviado para {email_user}\033[m")
-            return num_secreto, True
+        except smtplib.SMTPException:
+            print(f"\033[31mERRO: Falha no envio do e-mail (SMTP). Verifique as credenciais ou o endereço de destino.\033[m")
+            return num_secreto, False
             
         except Exception as e:
-            print(f"\033[31mERRO ao enviar email: {e}\033[m")
-            print("\033[31mVerifique a senha de aplicativo ou as configurações do email remetente.\033[m")
-            return None, False
+            print(f"\033[31mOcorreu um erro inesperado: {e}. Tente novamente mais tarde.\033[m")
+            return num_secreto, False
 
 class Sistema_de_recuperação:
-    
     def __init__(self, usuarios, menu_inicial):
         self.usuarios = usuarios
         self.menu_inicial = menu_inicial
-        self.executar_recuperacao()
+        self.iniciar_recuperacao()
 
-    def executar_recuperacao(self):
+    def encontrar_usuario(self, identificador):
+        identificador = identificador.lower()
+        for i, user in enumerate(self.usuarios):
+            if len(user) > 2 and (user[0].lower() == identificador or user[2].lower() == identificador):
+                return i, user[0], user[2]
+        return -1, None, None
+
+    def iniciar_recuperacao(self):
         limpar_tela()
         print("\n--- Recuperação de Senha ---")
-        email = str(input("Digite seu email de cadastro: ").strip().lower())
-        
-        usuario_encontrado = None
-        indice_usuario = -1
-        
-        for i, u in enumerate(self.usuarios):
-            if len(u) > 2 and u[2].lower() == email:
-                usuario_encontrado = u
-                indice_usuario = i
-                break
+        identificador = input("Digite seu nome de usuário ou e-mail cadastrado: ").strip()
 
-        if not usuario_encontrado:
-            print('\033[31mEmail não encontrado.\033[m')
+        indice_usuario, nome_usuario, email_usuario = self.encontrar_usuario(identificador)
+
+        if indice_usuario == -1:
+            print("\033[31mUsuário ou e-mail não encontrado.\033[m")
             sleep(3)
             self.menu_inicial()
             return
 
-        user_name = usuario_encontrado[0]
-        email_user = usuario_encontrado[2]
-
-        print("Aguarde... enviando código de recuperação.")
-        num_secreto, envio_sucesso = EmailSender.enviar_codigo_recuperacao(user_name, email_user)
+        print(f"\nEnviando código de recuperação para o e-mail: {email_usuario}")
         
-        if envio_sucesso:
-            self.verificar_codigo(indice_usuario, num_secreto)
-        else:
-            print("Não foi possível enviar o código de recuperação. Tente novamente mais tarde.")
+        codigo_secreto, enviado = EmailSender.enviar_codigo_recuperacao(nome_usuario, email_usuario)
+
+        if not enviado:
             sleep(3)
             self.menu_inicial()
-    
-    def verificar_codigo(self, indice_usuario, codigo_secreto):
+            return
+
+        print("\nCódigo enviado. Verifique sua caixa de entrada.")
+        sleep(2)
+        self.validar_codigo(indice_usuario, codigo_secreto)
+
+    def validar_codigo(self, indice_usuario, codigo_secreto):
         limpar_tela()
+        print("\n--- Confirmação de Código ---")
+        codigo_inserido = input("Digite o código de 6 dígitos que você recebeu por e-mail: ").strip().lower()
         
-        if codigo_secreto is None:
-            return 
-            
-        while True:
-            codigo_digitado = input("Digite o código de recuperação que você recebeu por email: ").strip()
+        if codigo_inserido == codigo_secreto:
+            while True:
+                nova_senha = str(input('Digite sua nova senha (Mínimo de 8 e máximo de 12 caracteres, com letra maiúscula, minúscula, número e caracteres especiais): ').strip())
+                
+                senha_valida = Verificar_dados.verificar_senha(nova_senha)
 
-            if codigo_digitado == codigo_secreto:
-                print('\033[32mCódigo correto!\033[m')
-                while True:
-                    nova_senha = str(input('Digite sua nova senha (Mínimo de 8 e máximo de 12 caracteres, com letra maiúscula, minúscula, número e caracteres especiais): ').strip())
+                if not senha_valida:
+                    print("A senha que você colocou foi considerada fraca. Por favor, escreva uma senha considerada forte.")
+                    continue
+                
+                conf_novasenha = str(input('Confirme sua nova senha: ').strip())
+                
+                if conf_novasenha == nova_senha:
+                    self.usuarios[indice_usuario][1] = nova_senha 
+                    usuario.Usuario.salvar_usuarios(self.usuarios) 
                     
-                    senha_valida = Verificar_dados.verificar_senha(nova_senha)
-
-                    if not senha_valida:
-                        print("A senha que você colocou foi considerada fraca. Por favor, escreva uma senha considerada forte.")
-                        continue
-                    
-                    conf_novasenha = str(input('Confirme sua nova senha: ').strip())
-                    
-                    if conf_novasenha == nova_senha:
-                        self.usuarios[indice_usuario][1] = nova_senha 
-                        usuario.Usuario.salvar_usuarios(self.usuarios) 
-                        
-                        print('\033[32mSenha atualizada com sucesso!\033[m')
-                        sleep(3)
-                        self.menu_inicial()
-                        return
-                    else:
-                        print('\033[31mA Senha de confirmação não confere. Por favor, comece novamente o processo de seleção de senha.\033[m')
-                        sleep(3)
-                        self.menu_inicial()
-                        return
-            else:
-                print('\033[31mO código inserido não corresponde ao enviado para o email\033[m')
-                sleep(3)
-                self.menu_inicial()
-                return
+                    print('\033[32mSenha atualizada com sucesso!\033[m')
+                    sleep(3)
+                    self.menu_inicial()
+                    return
+                else:
+                    print('\033[31mA Senha de confirmação não confere. Por favor, comece novamente o processo de seleção de senha.\033[m')
+                    sleep(3)
+                    self.menu_inicial()
+                    return
+        else:
+            print('\033[31mO código inserido não corresponde ao enviado para o email\033[m')
+            sleep(3)
+            self.menu_inicial()
+            return

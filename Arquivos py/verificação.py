@@ -3,6 +3,15 @@ from time import sleep
 import re
 
 class Verificar_dados:
+    
+    DOMINIOS_VALIDOS = {
+        'gmail.com',
+        'hotmail.com',
+        'outlook.com',
+        'ufrpe.br',
+        'yahoo.com', 
+    }
+    
     @staticmethod
     def verificar_senha(senha):
         cla_especiais = ['!', '@', '#', '$', '%', '¨', '&', '*', '(', ')',
@@ -11,7 +20,7 @@ class Verificar_dados:
         maiuscula = [ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
         numeros = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
         minusculas = [ 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
-        senhas_faceis = ["123456", "qwerty123", "qwerty1", "123456789", "12345678", "12345", "102030", "admin", "Brasil", "Qwerty123", "1234567", "Qwerty1!", "Qwerty123!", "password", "1234", "baseball", "dragon", "football", "monkey", "letmein", "abc123", "111111", "mustang", "access", "shadow", "master", "michael", "superman", "696969", "123123", "batmanQwerty12", "Qwerty1234", "Qwerty1?", "1234567890", "Qwerty123?", "Qwerty1"]
+        senhas_faceis = ["123456", "qwerty1", "senha123", "password"]
         
         if len(senha) < 8:
             print('senha com poucas letras, ela deve ter mais de 8 caracteres')
@@ -48,10 +57,18 @@ class Verificar_dados:
     
     @staticmethod
     def validar_email(email):
-
+        email = email.strip().lower()
         regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
         
-        if re.fullmatch(regex, email):
-            return True
-        else:
+        if not re.fullmatch(regex, email):
+            return False
+        
+        try:
+            dominio = email.split('@')[1]
+            
+            if dominio in Verificar_dados.DOMINIOS_VALIDOS:
+                return True
+            else:
+                return False
+        except IndexError:
             return False

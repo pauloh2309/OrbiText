@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import messagebox
 import usuario
 import recuperação_senha
-import menu_principal1
+import menu_principal
 from util import limpar_tela 
 
 BACKGROUND_COLOR = '#1f2833'
@@ -37,42 +37,60 @@ class OrbitextApp:
         self.label.grid(row=0, column=0, pady=70, sticky="nsew")
 
         self.button_frame = tk.Frame(master, bg=BACKGROUND_COLOR)
-        self.button_frame.grid(row=1, column=0, sticky="nsew", padx=150, pady=30)
-        
-        self.button_frame.grid_columnconfigure(0, weight=1)
-        
-        options = [
-            ("1 - Cadastre-se", self.handle_cadastro),
-            ("2 - Fazer login", self.handle_login),
-            ("3 - Esqueci minha senha", self.handle_recuperacao),
-            ("0 - Sair do programa", master.quit)
-        ]
+        self.button_frame.grid(row=1, column=0, pady=20)
 
-        for i, (text, command) in enumerate(options):
-            self.button_frame.grid_rowconfigure(i, weight=1)
-            btn = tk.Button(
-                self.button_frame, 
-                text=text, 
-                command=command, 
-                font=BUTTON_FONT,
-                bg=BUTTON_COLOR,
-                fg=FOREGROUND_COLOR,
-                activebackground=BACKGROUND_COLOR, 
-                activeforeground=FOREGROUND_COLOR,
-                relief=tk.RAISED, 
-                bd=5 
-            )
-            btn.grid(row=i, column=0, pady=15, padx=80, sticky="ew")
+        self.login_button = tk.Button(
+            self.button_frame, 
+            text="Fazer Login", 
+            command=self.handle_login, 
+            font=BUTTON_FONT, 
+            bg=BUTTON_COLOR, 
+            fg=FOREGROUND_COLOR, 
+            width=20
+        )
+        self.login_button.pack(pady=15)
 
+        self.cadastro_button = tk.Button(
+            self.button_frame, 
+            text="Criar Conta", 
+            command=self.handle_cadastro, 
+            font=BUTTON_FONT, 
+            bg=BUTTON_COLOR, 
+            fg=FOREGROUND_COLOR, 
+            width=20
+        )
+        self.cadastro_button.pack(pady=15)
+
+        self.recuperacao_button = tk.Button(
+            self.button_frame, 
+            text="Recuperar Senha", 
+            command=self.handle_recuperacao, 
+            font=BUTTON_FONT, 
+            bg=BUTTON_COLOR, 
+            fg=FOREGROUND_COLOR, 
+            width=20
+        )
+        self.recuperacao_button.pack(pady=15)
+
+        self.sair_button = tk.Button(
+            self.button_frame, 
+            text="Sair", 
+            command=master.quit, 
+            font=BUTTON_FONT, 
+            bg='red', 
+            fg=FOREGROUND_COLOR, 
+            width=20
+        )
+        self.sair_button.pack(pady=30)
+        
     def menu_inicial(self):
-        limpar_tela()
-        self.master.deiconify() 
-        self.master.state('zoomed') 
+        self.master.deiconify()
+        self.master.state('zoomed')
 
     def handle_cadastro(self):
         limpar_tela()
         print("\n--- INICIANDO CADASTRO NO CONSOLE (INTERAJA NO TERMINAL) ---")
-        self.master.withdraw() 
+        self.master.withdraw()
         
         try:
             usuario.Usuario.cadastrar_usuario(usuario.Usuario.usuarios)
@@ -91,10 +109,12 @@ class OrbitextApp:
         
         try:
             if usuario.Usuario.fazer_login(usuario.Usuario.usuarios):
+                # O controle é passado para menu_principal.orbitext() e retorna
                 pass
         except Exception as e:
              print(f"ERRO durante o login: {e}")
         
+        # Volta para a janela do tkinter após o logout/fim do orbitext()
         self.master.deiconify()
         self.master.state('zoomed')
         
@@ -108,12 +128,16 @@ class OrbitextApp:
         except Exception as e:
             print(f"ERRO durante a recuperação: {e}")
             messagebox.showerror("Erro", "Ocorreu um erro durante a recuperação. Verifique o console.")
-        
-        
-def main():
-    root = tk.Tk()
-    app = OrbitextApp(root)
-    root.mainloop()
+            
+        self.master.deiconify()
+        self.master.state('zoomed')
+
 
 if __name__ == "__main__":
-    main()
+    try:
+        root = tk.Tk()
+        app = OrbitextApp(root)
+        root.mainloop()
+    except Exception as e:
+        limpar_tela()
+        print(f"Erro fatal: {e}")
