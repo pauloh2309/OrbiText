@@ -83,7 +83,8 @@ class Usuario:
                 break
 
         while True:
-            senha = str(input('Digite sua senha (Mínimo de 8 e máximo de 12 caracteres, com letra maiúscula, minúscula, número e caracteres especiais): ').strip())
+            print('Digite sua senha (Mínimo de 8 e máximo de 12 caracteres, com letra maiúscula, minúscula, número e caracteres especiais): ')
+            senha = maskpass.askpass(prompt='Senha: ', mask='*').strip()
             
             senha_valida = verificação.Verificar_dados.verificar_senha(senha)
 
@@ -91,7 +92,7 @@ class Usuario:
                 print("A senha que você colocou foi considerada fraca. Por favor, escreva uma senha considerada forte.")
                 continue
 
-            conf_senha = str(input('Confirme sua senha: ').strip())
+            conf_senha = maskpass.askpass(prompt='Confirme sua senha: ', mask='*').strip()
             
             if conf_senha == senha:
                 break

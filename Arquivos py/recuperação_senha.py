@@ -6,7 +6,8 @@ from util import limpar_tela
 from verificação import Verificar_dados
 import usuario
 from time import sleep
-import socket 
+import socket
+import maskpass
 
 ARQUIVO_USUARIOS = 'usuarios.json'
 
@@ -101,7 +102,8 @@ class Sistema_de_recuperação:
         
         if codigo_inserido == codigo_secreto:
             while True:
-                nova_senha = str(input('Digite sua nova senha (Mínimo de 8 e máximo de 12 caracteres, com letra maiúscula, minúscula, número e caracteres especiais): ').strip())
+                print('Digite sua nova senha (Mínimo de 8 e máximo de 12 caracteres, com letra maiúscula, minúscula, número e caracteres especiais): ')
+                nova_senha = maskpass.askpass(prompt='Nova Senha: ', mask='*').strip()
                 
                 senha_valida = Verificar_dados.verificar_senha(nova_senha)
 
@@ -109,7 +111,7 @@ class Sistema_de_recuperação:
                     print("A senha que você colocou foi considerada fraca. Por favor, escreva uma senha considerada forte.")
                     continue
                 
-                conf_novasenha = str(input('Confirme sua nova senha: ').strip())
+                conf_novasenha = maskpass.askpass(prompt='Confirme sua nova senha: ', mask='*').strip()
                 
                 if conf_novasenha == nova_senha:
                     self.usuarios[indice_usuario][1] = nova_senha 
