@@ -5,6 +5,9 @@ import re
 import menu_principal
 import verificação
 import maskpass
+import util
+from pathlib import Path
+import dados 
 
 ARQUIVO_USUARIOS = 'usuarios.json'
 ARQUIVO_PUBLICOS = 'paragrafos_publicos.json'
@@ -12,435 +15,458 @@ ARQUIVO_PUBLICOS = 'paragrafos_publicos.json'
 class Usuario:
     
     usuario_logado = None 
+    XP_BASE = 100
+    FATOR_XP = 1.5
+    
+    NIVEIS_IDIOMA = {
+        1: '🐇', 2: '🦊', 3: '🐺', 4: '🐻', 5: '🦅',
+        6: '🐴', 7: '🐘', 8: '🐅', 9: '🦁', 10: '🦏'
+    }
+
+    NIVEIS_GERAL = {
+        1: '🧚', 2: '🗿', 3: '👁️', 4: '🦅', 5: '🧐',
+        6: '🦄', 7: '🐂', 8: '🔥', 9: '🐲', 10: '🌊'
+    }
 
     @staticmethod
-    def carregar_usuarios():
-        try:
-            with open(ARQUIVO_USUARIOS, 'r') as arquivo:
-                usuarios = json.load(arquivo)
-                usuarios_completos = []
-                for user in usuarios:
-                    if len(user) == 2:
-                        user.append('')
-                        user.append([])
-                    elif len(user) == 3:
-                        user.append([])
-                    usuarios_completos.append(user)
-                return usuarios_completos
-        except FileNotFoundError:
-            return []
-        except json.JSONDecodeError:
-            print("Aviso: Arquivo de usuários JSON corrompido ou vazio. Iniciando com lista vazia.")
-            return []
-            
-    @staticmethod
-    def salvar_usuarios(lista_usuarios):
-        try:
-            with open(ARQUIVO_USUARIOS, 'w') as arquivo:
-                json.dump(lista_usuarios, arquivo, indent=4) 
-        except Exception as e:
-            print(f"ERRO ao salvar usuários: {e}")
+    def obter_emoji_nivel(nivel, tipo='geral'):
+        if tipo == 'geral':
+            emojis = Usuario.NIVEIS_GERAL
+        else:
+            emojis = Usuario.NIVEIS_IDIOMA
 
-    @staticmethod
-    def carregar_publicos():
-        try:
-            with open(ARQUIVO_PUBLICOS, 'r', encoding='utf-8') as arquivo:
-                return json.load(arquivo)
-        except FileNotFoundError:
-            return []
-        except json.JSONDecodeError:
-            return []
-
-    @staticmethod
-    def salvar_publicos(paragrafos):
-        try:
-            with open(ARQUIVO_PUBLICOS, 'w', encoding='utf-8') as arquivo:
-                json.dump(paragrafos, arquivo, indent=4, ensure_ascii=False)
-        except Exception as e:
-            print(f"ERRO ao salvar parágrafos públicos: {e}")
-
-    usuarios = carregar_usuarios() 
-
-    @staticmethod
-    def cadastrar_usuario(lista_usuarios):
-        system('cls')
-        print('=' * 50)
-        print('          CADASTRO DE USUÁRIO')
-        print('=' * 50)
-        
-        while True:
-            nome = str(input('Digite seu nome: ').strip())
-            if not nome:
-                print("\033[31mNome não pode ser vazio.\033[m")
-                continue
-            
-            for user in lista_usuarios:
-                if user[0] == nome:
-                    print('\033[31mUsuário já existe. Por favor, escolha outro nome de usuário.\033[m')
-                    sleep(2)
-                    break
-            else:
-                break
-
-        while True:
-            print('Digite sua senha (Mínimo de 8 e máximo de 12 caracteres, com letra maiúscula, minúscula, número e caracteres especiais): ')
-            senha = maskpass.askpass(prompt='Senha: ', mask='*').strip()
-            
-            senha_valida = verificação.Verificar_dados.verificar_senha(senha)
-
-            if not senha_valida:
-                print("A senha que você colocou foi considerada fraca. Por favor, escreva uma senha considerada forte.")
-                continue
-
-            conf_senha = maskpass.askpass(prompt='Confirme sua senha: ', mask='*').strip()
-            
-            if conf_senha == senha:
-                break
-            else:
-                print('\033[31mA Senha de confirmação não confere. Por favor, comece novamente o processo de seleção de senha.\033[m')
-                sleep(2)
-
-        while True:
-            email = str(input('Digite seu email: ').strip())
-            if not verificação.Verificar_dados.validar_email(email):
-                print('\033[31mO email que você inseriu não está correto. Por favor, tente novamente.\033[m')
-                sleep(2)
-                continue
-            break
-        
-        novo_usuario = [nome, senha, email, []]
-        lista_usuarios.append(novo_usuario)
-        Usuario.salvar_usuarios(lista_usuarios)
-
-        print('\033[32mCadastro efetuado com sucesso!\033[m')
-        sleep(2)
-        system('cls')
+        if nivel in emojis and nivel <= 10:
+            return emojis[nivel]
+        elif nivel > 10:
+            return emojis[10] 
+        return '❓'
         
     @staticmethod
-    def fazer_login(lista_usuarios):
-        system('cls')
-        print('=' * 50)
-        print('           LOGIN DE USUÁRIO')
-        print('=' * 50)
-
-        identificador = str(input('Nome de usuário ou Email: ').strip())
-        
-        try:
-            senha = maskpass.askpass(prompt='Senha: ', mask='*').strip()
-        except NameError:
-            print("Aviso: 'maskpass' não está instalado. Usando entrada de senha padrão.")
-            senha = str(input('Senha: ').strip())
-
-        for user in lista_usuarios:
-            if (user[0] == identificador or user[2] == identificador) and user[1] == senha:
-                Usuario.usuario_logado = user
-                system('cls')
-                print(f'\033[32mLogin bem-sucedido! Bem-vindo(a), {user[0]}.\033[m')
-                sleep(2)
-                menu_principal.orbitext()
-                return True
-        
-        system('cls')
-        print('\033[31mIdentificador, Email ou senha inválidos.\033[m')
-        sleep(2)
-        system('cls')
-        return False
-
-    @staticmethod
-    def expandir_paragrafo(paragrafo, origem="DETALHES"):
-        system('cls')
-        print('=' * 50)
-        print(f"      EXPANSÃO DE LEITURA - {origem}")
-        print(f"      Título: {paragrafo.get('titulo', 'N/A')} | Idioma: {paragrafo.get('idioma', 'N/A')}")
-        print('=' * 50)
-
-        print("\n--- TEXTO ORIGINAL ---")
-        print(paragrafo.get('texto_original', 'Texto não encontrado.'))
-        
-        print("\n--- TRADUÇÃO (PORTUGUÊS) ---")
-        print(paragrafo.get('traducao', 'Tradução não encontrada.'))
-        
-        print('=' * 50)
-        input("Pressione ENTER para voltar à lista...")
-        system('cls')
+    def calcular_nivel(xp_total):
+        nivel = 1
+        xp_necessario = Usuario.XP_BASE
+        while xp_total >= xp_necessario:
+            xp_total -= xp_necessario
+            nivel += 1
+            xp_necessario = int(Usuario.XP_BASE * (Usuario.FATOR_XP ** (nivel - 1)))
+        return nivel
     
     @staticmethod
-    def salvar_paragrafo(idioma, texto_original, traducao, titulo, visibilidade):
-        if not Usuario.usuario_logado:
-            print("\033[31mERRO: Necessário login para salvar parágrafo.\033[m")
+    def carregar_usuarios():
+
+        if Path(ARQUIVO_USUARIOS).exists():
+            with open(ARQUIVO_USUARIOS, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        return []
+
+    @staticmethod
+    def salvar_usuarios(usuarios):
+        with open(ARQUIVO_USUARIOS, 'w', encoding='utf-8') as f:
+            json.dump(usuarios, f, indent=4, ensure_ascii=False)
+
+    @staticmethod
+    def _encontrar_usuario(usuarios, nome_ou_email):
+        """Procura um usuário pelo nome ou email (case-insensitive)."""
+        nome_ou_email = nome_ou_email.strip().lower()
+        for i, user in enumerate(usuarios):
+            nome_existente = user[0].lower()
+            email_existente = user[2].lower() if len(user) > 2 and user[2] else None
+            
+            if nome_existente == nome_ou_email:
+                return i, user 
+            if email_existente and email_existente == nome_ou_email:
+                return i, user 
+        return -1, None
+
+    @staticmethod
+    def _usuario_existe(usuarios, nome_ou_email, check_email_only=False):
+        """Verifica se nome ou email já existe (para cadastro)."""
+        nome_ou_email = nome_ou_email.strip().lower()
+
+        for user in usuarios:
+            nome_existente = user[0].lower()
+            email_existente = user[2].lower() if len(user) > 2 and user[2] else None
+
+            if not check_email_only and nome_existente == nome_ou_email:
+                return True, 'Nome de usuário'
+            if email_existente == nome_ou_email:
+                return True, 'E-mail'
+        return False, None
+    
+    @staticmethod
+    def cadastrar_usuario(usuarios):
+        util.limpar_tela()
+        print('=' * 50)
+        print('      ✍️  NOVO REGISTRO (CONTA)')
+        print('=' * 50)
+
+        tentativas_nome = 0
+        nome_usuario = ""
+        while tentativas_nome < 3:
+            nome_usuario = input("Digite o nome de usuário (será usado para login): ").strip()
+            if not nome_usuario:
+                print('\033[31mErro: Nome de usuário não pode estar vazio.\033[m')
+                tentativas_nome += 1
+                sleep(1.5)
+                continue
+
+            existe, tipo = Usuario._usuario_existe(usuarios, nome_usuario)
+            if existe and tipo == 'Nome de usuário':
+                print(f'\033[31mErro: O {tipo} "{nome_usuario}" já está cadastrado. Tente outro.\033[m')
+                tentativas_nome += 1
+                sleep(1.5)
+            else:
+                break
+        
+        if tentativas_nome == 3:
+            print('\033[31mNúmero máximo de tentativas excedido para o nome de usuário. Voltando ao Menu Principal.\033[m')
             sleep(2)
             return False
 
-        nome_usuario = Usuario.usuario_logado[0]
-        
-        paragrafo_base = {
-            'texto_original': texto_original,
-            'traducao': traducao,
-            'idioma': idioma,
-            'titulo': titulo
-        }
+        tentativas_email = 0
+        email_usuario = ""
+        while tentativas_email < 3:
+            email_usuario = input("Digite o seu e-mail (usado para recuperação de senha): ").strip()
+            
+            if not verificação.Verificar_dados.validar_email(email_usuario):
+                print('\033[31mErro: O e-mail digitado não é válido. Verifique o formato e o domínio.\033[m')
+                tentativas_email += 1
+                sleep(1.5)
+                continue
 
-        if visibilidade == 'privado':
             
-            usuarios_lista_atualizada = Usuario.carregar_usuarios()
-            usuario_index = -1
-            for i, user in enumerate(usuarios_lista_atualizada):
-                if user[0] == nome_usuario:
-                    usuario_index = i
-                    break
+            existe, tipo = Usuario._usuario_existe(usuarios, email_usuario, check_email_only=True)
+            if existe and tipo == 'E-mail':
+                
+                print(f'\033[31mErro: O {tipo} "{email_usuario}" já está cadastrado. Tente outro.\033[m')
+                tentativas_email += 1
+                sleep(1.5)
+            else:
+                break
+
+        if tentativas_email == 3:
+            print('\033[31mNúmero máximo de tentativas excedido para o e-mail. Voltando ao Menu Principal.\033[m')
+            sleep(2)
+            return False
+
+        tentativas_senha = 0
+        senha_usuario = ""
+        while tentativas_senha < 3:
+            print('Digite sua senha (Mínimo de 8 e máximo de 12 caracteres, com letra maiúscula, minúscula, número e caracteres especiais): ')
+            senha_usuario = maskpass.askpass(prompt='Senha: ', mask='*').strip()
+
+            if verificação.Verificar_dados.verificar_senha(senha_usuario): 
+                conf_senha = maskpass.askpass(prompt='Confirme a senha: ', mask='*').strip()
+                
+                if conf_senha == senha_usuario:
+                    break 
+                else:
+                    print('\033[31mErro: A Senha de confirmação não confere. Por favor, digite a senha novamente.\033[m')
+                    tentativas_senha += 1 
+                    sleep(2)
+            else:
+                tentativas_senha += 1
+                sleep(1) 
+                
+        if tentativas_senha == 3:
+            print('\033[31mNúmero máximo de tentativas excedido para a senha. Voltando ao Menu Principal.\033[m')
+            sleep(2)
+            return False
+        novo_usuario = [nome_usuario, senha_usuario, email_usuario, [], 1, 0] 
+        usuarios.append(novo_usuario)
+        Usuario.salvar_usuarios(usuarios)
+        
+        print(f'\n\033[32mUsuário "{nome_usuario}" cadastrado com sucesso! Retornando ao Menu Principal.\\033[m')
+        sleep(2)
+        return True
+
+    @staticmethod
+    def fazer_login(usuarios):
+        util.limpar_tela()
+        print('=' * 50)
+        print('      🔑 LOGIN (CONTA EXISTENTE)')
+        print('=' * 50)
+        tentativas_nome_email = 0
+        indice_usuario = -1
+        dados_usuario = None
+        while tentativas_nome_email < 3:
+            nome_ou_email = input("Digite o nome de usuário ou e-mail: ").strip()
             
-            if usuario_index != -1:
-                if len(usuarios_lista_atualizada[usuario_index]) < 4:
-                    usuarios_lista_atualizada[usuario_index].append([])
+            if not nome_ou_email:
+                print('\033[31mErro: Nome de usuário ou e-mail não pode estar vazio.\033[m')
+                tentativas_nome_email += 1
+                sleep(1.5)
+                continue
                 
-                paragrafos_salvos_do_usuario = usuarios_lista_atualizada[usuario_index][3]
+            indice_usuario, dados_usuario = Usuario._encontrar_usuario(usuarios, nome_ou_email)
+            
+            if indice_usuario == -1:
+                print('\033[31mErro: Nome de usuário ou e-mail NÃO cadastrado ou não encontrado. Tente novamente.\033[m')
+                tentativas_nome_email += 1
+                sleep(1.5)
+            else:
+                break 
                 
-                for p in paragrafos_salvos_do_usuario:
-                    if (p.get('texto_original') == texto_original and 
-                        p.get('titulo') == titulo):
-                        print("\033[31mERRO: Este parágrafo já está salvo (privado).\033[m")
-                        sleep(2)
-                        return False # Retorna False em caso de duplicata
-                
-                novo_paragrafo_privado = paragrafo_base.copy()
-                novo_paragrafo_privado['visibilidade'] = 'privado'
-                
-                usuarios_lista_atualizada[usuario_index][3].append(novo_paragrafo_privado)
-                
-                Usuario.usuarios = usuarios_lista_atualizada
-                Usuario.usuario_logado = Usuario.usuarios[usuario_index]
-                
-                Usuario.salvar_usuarios(Usuario.usuarios)
+        if tentativas_nome_email == 3:
+            print('\033[31mNúmero máximo de tentativas excedido para nome/e-mail. Voltando ao Menu Principal.\033[m')
+            sleep(2)
+            return False
+
+        tentativas_senha = 0
+        while tentativas_senha < 3:
+            senha_input = maskpass.askpass(prompt='Senha: ', mask='*').strip()
+            
+            senha_correta = dados_usuario[1] 
+            
+            if senha_input == senha_correta:
+                Usuario.usuario_logado = dados_usuario
+                util.limpar_tela()
+                print(f'\n\033[32mBem-vindo(a), {dados_usuario[0]}! Login realizado com sucesso.\033[m')
+                sleep(2)
+                menu_principal.menu_principal()
                 return True
             else:
-                print("\033[31mERRO: Usuário não encontrado na lista.\033[m")
-                sleep(2)
-                return False
-
-        elif visibilidade == 'publico':
-            
-            paragrafos_publicos = Usuario.carregar_publicos()
-            paragrafo_existente = None
-            paragrafo_salvo_pelo_user = False
-            
-            for p in paragrafos_publicos:
-                if (p.get('texto_original') == texto_original and 
-                    p.get('titulo') == titulo and 
-                    p.get('idioma') == idioma):
-                    paragrafo_existente = p
-                    break
-            
-            if paragrafo_existente:
-                if nome_usuario in paragrafo_existente['salvadores']:
-                    print("\033[31mERRO: Este parágrafo já foi salvo por você (público).\033[m")
-                    sleep(2)
-                    return False # Retorna False em caso de duplicata pelo mesmo usuário
-                else:
-                    paragrafo_existente['salvadores'].append(nome_usuario)
-                    paragrafo_existente['contagem'] += 1
-                    paragrafo_salvo_pelo_user = True
-            else:
-                novo_paragrafo_publico = paragrafo_base.copy()
-                novo_paragrafo_publico['salvadores'] = [nome_usuario]
-                novo_paragrafo_publico['contagem'] = 1
-                paragrafos_publicos.append(novo_paragrafo_publico)
-                paragrafo_salvo_pelo_user = True
-
-            if paragrafo_salvo_pelo_user:
-                Usuario.salvar_publicos(paragrafos_publicos)
-            
-            usuarios_lista_atualizada = Usuario.carregar_usuarios()
-            usuario_index = -1
-            for i, user in enumerate(usuarios_lista_atualizada):
-                if user[0] == nome_usuario:
-                    usuario_index = i
-                    break
-            
-            if usuario_index != -1:
-                if len(usuarios_lista_atualizada[usuario_index]) < 4:
-                    usuarios_lista_atualizada[usuario_index].append([])
-                
-                paragrafos_salvos_do_usuario = usuarios_lista_atualizada[usuario_index][3]
-                
-                for p in paragrafos_salvos_do_usuario:
-                    if (p.get('texto_original') == texto_original and 
-                        p.get('titulo') == titulo):
-                        
-                        if p.get('visibilidade') == 'publico':
-                            # Se já está como publico no user list (improvável após check acima, mas seguro)
-                            return True 
-                            
-                        # Remove a versão privada antiga se estiver sendo promovida a pública
-                        paragrafos_salvos_do_usuario.remove(p)
-                        break
-
-                novo_paragrafo_user_publico = paragrafo_base.copy()
-                novo_paragrafo_user_publico['visibilidade'] = 'publico'
-
-                usuarios_lista_atualizada[usuario_index][3].append(novo_paragrafo_user_publico)
-                
-                Usuario.usuarios = usuarios_lista_atualizada
-                Usuario.usuario_logado = Usuario.usuarios[usuario_index]
-                
-                Usuario.salvar_usuarios(Usuario.usuarios)
-
-            return True
-
+                print('\033[31mErro: Senha incorreta. Tente novamente.\033[m')
+                tentativas_senha += 1
+                sleep(1.5)
+        print('\033[31mNúmero máximo de tentativas excedido para a senha. Voltando ao Menu Principal.\\033[m')
+        sleep(2)
         return False
+    
 
     @staticmethod
-    def mostrar_meus_paragrafos(para_remover=False):
-        system('cls')
-        if not Usuario.usuario_logado or not Usuario.usuario_logado[3]:
-            print(f"O usuário {Usuario.usuario_logado[0]} não possui parágrafos salvos.")
-            input("Pressione ENTER para voltar ao Gerenciamento...")
-            return
-
-        paragrafos = Usuario.usuario_logado[3]
-        titulo_sec = f"  MEUS PARÁGRAFOS SALVOS - {Usuario.usuario_logado[0]}"
-        
-        def exibir_lista(paragrafos, titulo_secao):
-            system('cls')
-            print('=' * 50)
-            print(titulo_secao)
-            print('=' * 50)
-            
-            print(f"{'#':<4} | {'IDIOMA':<10} | {'VISIBILIDADE':<15} | {'TÍTULO':<30} | TEXTO (SNIPPET)")
-            print('-' * 90)
-            
-            for i, p in enumerate(paragrafos):
-                texto_snippet = p['texto_original'][:40] + '...' if len(p['texto_original']) > 40 else p['texto_original']
-                visibilidade = p.get('visibilidade', 'privado')
-                print(f"{i+1:<4} | {p['idioma']:<10} | {visibilidade:<15} | {p['titulo']:<30} | {texto_snippet}")
-                
-            print('-' * 90)
-
-        exibir_lista(paragrafos, titulo_sec)
-
-        if not para_remover:
-            while True:
-                try:
-                    escolha = input("Digite o número do parágrafo para EXPANDIR/VER DETALHES (0 para voltar): ")
-                    if escolha.lower() == '0':
-                        break
-                    
-                    indice = int(escolha) - 1
-                    if 0 <= indice < len(paragrafos):
-                        Usuario.expandir_paragrafo(paragrafos[indice], origem=titulo_sec.strip())
-                        exibir_lista(paragrafos, titulo_sec) 
-                        continue
-                    else:
-                        print("\033[31mNúmero de parágrafo inválido.\033[m")
-                        sleep(1)
-                except ValueError:
-                    print("\033[31mEntrada inválida. Digite um número ou 0.\033[m")
-                    sleep(1)
-        
-        else:
-            while True:
-                try:
-                    escolha = input("Digite o número do parágrafo para remover (0 para cancelar): ")
-                    if escolha.lower() == '0':
-                        break
-                    
-                    indice = int(escolha) - 1
-                    if 0 <= indice < len(paragrafos):
-                        paragrafo_removido = Usuario.usuario_logado[3].pop(indice)
-                        
-                        if paragrafo_removido.get('visibilidade') == 'publico':
-                            Usuario.remover_do_publico(paragrafo_removido)
-
-                        usuarios_lista_atualizada = Usuario.carregar_usuarios()
-                        for i, user in enumerate(usuarios_lista_atualizada):
-                            if user[0] == Usuario.usuario_logado[0]:
-                                usuarios_lista_atualizada[i] = Usuario.usuario_logado
-                                break
-
-                        Usuario.salvar_usuarios(usuarios_lista_atualizada)
-                        
-                        print(f"\033[32mParágrafo removido com sucesso: {paragrafo_removido['titulo']} ({paragrafo_removido['idioma']})\033[m")
-                        sleep(2)
-                        break
-                    else:
-                        print("\033[31mNúmero de parágrafo inválido.\033[m")
-                        sleep(2)
-                except ValueError:
-                    print("\033[31mEntrada inválida. Digite um número.\033[m")
-                    sleep(2)
-        
-        system('cls')
-        
-    @staticmethod
-    def remover_do_publico(paragrafo_removido):
-        
-        paragrafos_publicos = Usuario.carregar_publicos()
-        nome_usuario = Usuario.usuario_logado[0]
-        
-        for i, p in enumerate(paragrafos_publicos):
-            if (p.get('texto_original') == paragrafo_removido.get('texto_original') and
-                p.get('titulo') == paragrafo_removido.get('titulo') and
-                p.get('idioma') == paragrafo_removido.get('idioma')):
-                
-                if nome_usuario in p['salvadores']:
-                    p['salvadores'].remove(nome_usuario)
-                    p['contagem'] -= 1
-                    
-                    if p['contagem'] <= 0:
-                        paragrafos_publicos.pop(i)
-                    
-                    Usuario.salvar_publicos(paragrafos_publicos)
-                    return
+    def carregar_paragrafos_publicos():
+        if Path(ARQUIVO_PUBLICOS).exists():
+            with open(ARQUIVO_PUBLICOS, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        return []
 
     @staticmethod
     def mostrar_paragrafos_publicos():
-        system('cls')
+        paragrafos_publicos = Usuario.carregar_paragrafos_publicos()
+        
+        titulo_sec = '      📝 PARÁGRAFOS PÚBLICOS'
+        util.limpar_tela()
         print('=' * 50)
-        titulo_sec = "   PARÁGRAFOS PÚBLICOS SALVOS POR TODOS"
         print(titulo_sec)
         print('=' * 50)
-
-        paragrafos_publicos = Usuario.carregar_publicos()
         
         if not paragrafos_publicos:
-            print("\nNenhum parágrafo público encontrado.")
-            input("Pressione ENTER para voltar ao Menu Principal...")
-            system('cls')
+            print('\033[33mNenhum parágrafo público disponível no momento.\033[m')
+            sleep(2)
             return
 
-        print(f"{'#':<4} | {'IDIOMA':<10} | {'TÍTULO':<30} | {'SALVAMENTOS':<15} | TEXTO (SNIPPET)")
+        print(f"{'#':<4} | {'IDIOMA':<10} | {'TÍTULO':<30} | {'AUTOR':<15} | TEXTO (SNIPPET)")
         print('-' * 90)
         for i, p in enumerate(paragrafos_publicos):
             texto_snippet = p['texto_original'][:40] + '...' if len(p['texto_original']) > 40 else p['texto_original']
-            print(f"{i+1:<4} | {p['idioma']:<10} | {p['titulo']:<30} | {p['contagem']:<15} | {texto_snippet}")
+            autor_display = p.get('autor', 'Desconhecido')
+            print(f"{i+1:<4} | {p['idioma']:<10} | {p['titulo']:<30} | {autor_display:<15} | {texto_snippet}")
         print('-' * 90)
-        
+
         while True:
             try:
-                escolha = input("Digite o número do parágrafo para EXPANDIR/VER DETALHES (0 para voltar): ")
+                escolha = input("Digite o número do parágrafo para EXPANDIR/VER DETALHES (0 para voltar): ").strip()
                 if escolha.lower() == '0':
                     break
                 
                 indice = int(escolha) - 1
                 if 0 <= indice < len(paragrafos_publicos):
                     Usuario.expandir_paragrafo(paragrafos_publicos[indice], origem=titulo_sec.strip())
+                    util.limpar_tela()
                     
-                    # Re-display list after returning from expansion
-                    system('cls')
                     print('=' * 50)
                     print(titulo_sec)
                     print('=' * 50)
-                    print(f"{'#':<4} | {'IDIOMA':<10} | {'TÍTULO':<30} | {'SALVAMENTOS':<15} | TEXTO (SNIPPET)")
+                    print(f"{'#':<4} | {'IDIOMA':<10} | {'TÍTULO':<30} | {'AUTOR':<15} | TEXTO (SNIPPET)")
                     print('-' * 90)
                     for i, p in enumerate(paragrafos_publicos):
                         texto_snippet = p['texto_original'][:40] + '...' if len(p['texto_original']) > 40 else p['texto_original']
-                        print(f"{i+1:<4} | {p['idioma']:<10} | {p['titulo']:<30} | {p['contagem']:<15} | {texto_snippet}")
+                        autor_display = p.get('autor', 'Desconhecido')
+                        print(f"{i+1:<4} | {p['idioma']:<10} | {p['titulo']:<30} | {autor_display:<15} | {texto_snippet}")
                     print('-' * 90)
-                    continue
+                    
                 else:
-                    print("\033[31mNúmero de parágrafo inválido.\033[m")
-                    sleep(1)
+                    print('\033[31mOpção inválida. Digite um número da lista ou 0 para voltar.\033[m')
+                    sleep(1.5)
             except ValueError:
-                print("\033[31mEntrada inválida. Digite um número ou 0.\033[m")
-                sleep(1)
+                print('\033[31mOpção inválida. Digite apenas números.\033[m')
+                sleep(1.5)
 
-        system('cls')
+    @staticmethod
+    def expandir_paragrafo(paragrafo, origem=""):
+        util.limpar_tela()
+        print('=' * 50)
+        print(f"      EXPANDINDO: {paragrafo['titulo'].upper()}")
+        if origem:
+             print(f"      (Origem: {origem})")
+        print('=' * 50)
+        
+        print(f"\033[34mAutor: {paragrafo.get('autor', 'Desconhecido')}\033[m")
+        print(f"\033[34mIdioma: {paragrafo['idioma'].capitalize()}\033[m")
+        print("-" * 50)
+        
+        print("\n\033[33m--- Texto Original ---\033[m")
+        print(paragrafo['texto_original'])
+        
+        print("\n\033[33m--- Tradução (Português) ---\033[m")
+        print(paragrafo['traducao'])
+        
+        print("-" * 50)
+        input("Pressione ENTER para voltar...")
+        
+    @staticmethod
+    def remover_texto_do_usuario(texto_id):
+        if not Usuario.usuario_logado:
+            print("\033[31mErro: Nenhum usuário logado.\033[m")
+            sleep(1)
+            return
+
+        autor = Usuario.usuario_logado[0]
+        
+        sucesso = dados.DataManager.remover_texto_personalizado(texto_id, autor)
+        
+        if sucesso:
+            print('\033[32mTexto removido com sucesso!\033[m')
+        else:
+            print('\033[31mErro: Não foi possível remover o texto. Talvez ele não exista ou você não seja o autor.\033[m')
+        
+        sleep(2)
+        util.limpar_tela()
+
+    @staticmethod
+    def mostrar_meus_paragrafos(para_remover=False):
+        util.limpar_tela()
+        if not Usuario.usuario_logado:
+            print("\033[31mVocê precisa estar logado para ver seus textos.\033[m")
+            sleep(2)
+            return
+
+        nome_usuario = Usuario.usuario_logado[0]
+        ids_proprios = Usuario.usuario_logado[3] 
+
+        if not ids_proprios:
+            print('=' * 50)
+            print(f"      📝 MEUS TEXTOS ({nome_usuario})")
+            print('=' * 50)
+            print("\nVocê ainda não possui textos personalizados salvos.")
+            print('\n' + '=' * 50)
+            input("Pressione ENTER para voltar...")
+            return
+
+        while True:
+            util.limpar_tela()
+            print('=' * 50)
+            print(f"      📝 MEUS TEXTOS ({nome_usuario})")
+            print('=' * 50)
+            print(f"{'#':<4}{'TÍTULO':<40}{'IDIOMA':<15}{'AUTOR':<20}")
+            print('-' * 79)
+
+            textos_proprios = []
+            for i, texto_id in enumerate(ids_proprios):
+                texto = dados.DataManager.buscar_texto_por_id(texto_id)
+                if texto:
+                    textos_proprios.append(texto)
+                    titulo_exibir = (texto['Titulo'][:37] + '...') if len(texto['Titulo']) > 40 else texto['Titulo']
+                    print(f"{i+1:<4}{titulo_exibir:<40}{texto['idioma_nome']:<15}{texto['Autor']:<20}")
+            
+            print('\n' + '=' * 50)
+            if para_remover:
+                print(" 0 - Voltar")
+                print('=' * 50)
+                escolha = input("Digite o NÚMERO do texto que deseja remover (ou 0 para voltar): ").strip()
+            else:
+                print(" 0 - Voltar")
+                print('=' * 50)
+                escolha = input("Pressione ENTER para voltar: ").strip()
+
+            if escolha == '0' or (not para_remover and not escolha):
+                util.limpar_tela()
+                return
+            
+            if para_remover:
+                try:
+                    indice = int(escolha) - 1
+                    if 0 <= indice < len(textos_proprios):
+                        texto_remover = textos_proprios[indice]
+                        confirmacao = input(f"\033[33mTem certeza que deseja remover o texto '{texto_remover['Titulo']}'? (s/n): \033[m").strip().lower()
+                        if confirmacao == 's':
+                            Usuario.remover_texto_do_usuario(texto_remover['id'])
+                            Usuario.usuarios = Usuario.carregar_usuarios()
+                            Usuario.usuario_logado = Usuario.usuarios[Usuario.obter_indice_usuario(nome_usuario, Usuario.usuarios)]
+                        else:
+                            print("\033[33mRemoção cancelada.\033[m")
+                            sleep(1)
+                    else:
+                        print("\033[31mOpção inválida.\033[m")
+                        sleep(1)
+                except ValueError:
+                    print("\033[31mOpção inválida. Digite um número.\033[m")
+                    sleep(1)
+            else:
+                 if escolha:
+                    print("\033[31mOpção inválida. Pressione ENTER para voltar.\033[m")
+                    sleep(1)
+    @staticmethod
+    def salvar_paragrafos_publicos(novo_paragrafo, remover=False):
+        paragrafos_publicos = Usuario.carregar_paragrafos_publicos()
+        
+        if remover:
+            try:
+                item_chave = (novo_paragrafo['titulo'], novo_paragrafo['autor'])
+                
+                paragrafos_publicos[:] = [
+                    p for p in paragrafos_publicos 
+                    if (p['titulo'], p['autor']) != item_chave
+                ]
+            except Exception as e:
+                print(f"Erro ao tentar remover dos públicos: {e}")
+                
+        elif novo_paragrafo['visibilidade'] == 'publico':
+            paragrafos_publicos.append(novo_paragrafo)
+
+        with open(ARQUIVO_PUBLICOS, 'w', encoding='utf-8') as f:
+            json.dump(paragrafos_publicos, f, indent=4, ensure_ascii=False)
+            
+    @staticmethod
+    def salvar_usuarios_com_alteracao(usuario_alterado, todos_usuarios):
+        for i, user in enumerate(todos_usuarios):
+            if user[0] == usuario_alterado[0]:
+                todos_usuarios[i] = usuario_alterado
+                break
+        
+        Usuario.salvar_usuarios(todos_usuarios)
+        
+    @staticmethod
+    def remover_usuario(usuarios):
+        util.limpar_tela()
+        print('=' * 50)
+        print('      ❌ REMOVER CONTA')
+        print('=' * 50)
+
+        nome_ou_email = input("Nome de usuário ou E-mail da conta a ser excluída: ").strip()
+        senha = maskpass.askpass(prompt="Senha: ", mask='*').strip() 
+        
+        indice_remover = -1
+        for i, user in enumerate(usuarios):
+            if (user[0] == nome_ou_email or (user[2] and user[2] == nome_ou_email)) and user[1] == senha:
+                indice_remover = i
+                break
+
+        if indice_remover != -1:
+            confirmacao = input(f"\033[33mTem certeza que deseja EXCLUIR a conta de '{usuarios[indice_remover][0]}'? Esta ação é irreversível. (s/n): \033[m").strip().lower()
+            if confirmacao == 's':
+                usuarios.pop(indice_remover)
+                Usuario.salvar_usuarios(usuarios)
+                print('\033[32mConta excluída com sucesso!\033[m')
+                sleep(2)
+                if Usuario.usuario_logado and Usuario.usuario_logado[0] == nome_ou_email:
+                    Usuario.usuario_logado = None
+                return True
+            else:
+                print('\033[34mExclusão cancelada.\033[m')
+                sleep(2)
+        else:
+            print('\033[31mNome de usuário ou e-mail/senha inválidos ou não encontrados.\033[m')
+            sleep(2)
+        return False

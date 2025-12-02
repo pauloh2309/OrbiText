@@ -1,0 +1,34 @@
+[
+    {
+        "texto_original": "La primera habilidad diplomática en juego es la de anticipación, a lo que la IA puede ofrecer como oportunidad y a los peligros que puede envolver su adopción sin miramientos. La fe ciega en la tecnología conduce a tecnocracia y a ceder inteligencia humana, rindiéndose a procesos automatizados y distantes en los que se pierde control. Y un área de política pública tan relevante como la de las relaciones internacionales, íntimamente ligada a principios de soberanía, cooperación y subsidiariedad, poco podría prosperar y mantenerse con el nivel de autonomía necesaria para honrar la función pública para la que fue diseñada al servicio de los Estados y sus sistemas intergubernamentales, si sucumbiera a dichos procesos. Un nuevo paradigma de gobernanza digital se viene configurando con sucesivas aproximaciones desde lo normativo por parte de actores internacionales de primer orden, representativos de diversos sistemas legales. El debate de fondo es entre la utilidad de la tecnología y su neutralidad socio-política.",
+        "traducao": "A principal habilidade diplomática em jogo é a da antecipação — tanto das oportunidades que a IA oferece quanto dos perigos que sua adoção irrefletida pode trazer. A fé cega na tecnologia leva à tecnocracia e à renúncia da inteligência humana, entregando-se a processos automatizados e distantes, nos quais se perde o controle. Uma área de política pública tão relevante quanto as relações internacionais — intimamente ligada a princípios de soberania, cooperação e subsidiariedade — dificilmente prosperaria e manteria o nível de autonomia necessário para honrar sua função pública ao serviço dos Estados e de seus sistemas intergovernamentais, se cedesse a esses processos. Um novo paradigma de governança digital está se configurando gradualmente, com sucessivas iniciativas normativas de atores internacionais de primeira ordem, representativos de diversos sistemas legais. O debate essencial é entre a utilidade da tecnologia e sua neutralidade sociopolítica.",
+        "idioma": "espanhol",
+        "titulo": "Los servicios exteriores en la era de la inteligencia artificial",
+        "salvadores": [
+            "pauloteste24"
+        ],
+        "contagem": 1
+    },
+    {
+        "id": "1764703278862",
+        "autor": "pauloteste24",
+        "idioma": "english",
+        "texto_original": "I live on a farm in the countryside where there are large fields of green grass and lots of animals.",
+        "traducao": "Eu moro em uma fazenda no campo onde há grandes campos de grama verde e muitos animais.",
+        "titulo": "Where do you live?",
+        "visibilidade": "privado",
+        "paragrafo_numero": 1,
+        "texto_id": "1764703278853"
+    },
+    {
+        "id": "1764703299445",
+        "autor": "pauloteste24",
+        "idioma": "english",
+        "texto_original": "My favorite animals to take care of are the horses and the cows.",
+        "traducao": "Meus animais favoritos para cuidar são os cavalos e as vacas.",
+        "titulo": "Where do you live?",
+        "visibilidade": "publico",
+        "paragrafo_numero": 3,
+        "texto_id": "1764703299444"
+    }
+]

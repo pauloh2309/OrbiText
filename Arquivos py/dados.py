@@ -1,237 +1,265 @@
 import json
 from os import path
-from time import sleep
-from os import system
+from time import sleep, time
 import usuario
+import menu_leitura
+import verificação
+import util
+import os
 
 NOME_ARQUIVO = 'textos_idiomas.json'
+ARQUIVO_PUBLICOS = 'paragrafos_publicos.json'
+ARQUIVO_COMENTARIOS = 'comentarios.json'
 
-class RankingManager:
+class DataManager:
+    IDIOMAS_MAP = {
+        '1': 'english',
+        '2': 'french',
+        '3': 'spanish',
+    }
+    
+    IDIOMAS_NOMES = {
+        'english': 'Inglês',
+        'french': 'Francês',
+        'spanish': 'Espanhol'
+    }
+
     @staticmethod
-    def mostrar_rankings():
-        system('cls')
+    def carregar_textos_idiomas():
+        if path.exists(NOME_ARQUIVO):
+            with open(NOME_ARQUIVO, 'r', encoding='utf-8') as f:
+                try:
+                    return json.load(f)
+                except json.JSONDecodeError:
+                    return {"english": [], "french": [], "spanish": []}
+        return {"english": [], "french": [], "spanish": []}
+
+    @staticmethod
+    def salvar_textos_idiomas(data):
+        with open(NOME_ARQUIVO, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=4, ensure_ascii=False)
+
+    @staticmethod
+    def gerar_novo_id():
+        return str(int(time() * 1000))
+
+    @staticmethod
+    def salvar_texto_personalizado(titulo, idioma_original, lista_paragrafos):
+        data = DataManager.carregar_textos_idiomas()
+        
+        idioma_key = idioma_original.lower()
+        if idioma_key not in data:
+            data[idioma_key] = []
+            
+        novo_id = DataManager.gerar_novo_id()
+        autor = usuario.Usuario.usuario_logado[0] if usuario.Usuario.usuario_logado else 'Desconhecido'
+        
+        paragrafos_formatados = []
+        for p in lista_paragrafos:
+            paragrafos_formatados.append({
+                "Lingua": p['original'], 
+                "portugues": p['traducao']
+            })
+            
+        novo_texto = {
+            "id": novo_id,
+            "Titulo": titulo,
+            "Paragrafos": paragrafos_formatados,
+            "Autor": autor,
+            "Referencia": "Texto Personalizado",
+            "Nome_Idioma_Exibicao": idioma_original
+        }
+        
+        data[idioma_key].append(novo_texto)
+        DataManager.salvar_textos_idiomas(data)
+        
+        if usuario.Usuario.usuario_logado:
+            usuario.Usuario.usuario_logado[3].append(novo_id)
+            usuario.Usuario.salvar_usuarios(usuario.Usuario.usuarios)
+            
+        print(f"\033[32mTexto '{titulo}' salvo com sucesso!\033[m")
+        sleep(2)
+        
+    @staticmethod
+    def remover_texto_personalizado(texto_id, autor):
+        data = DataManager.carregar_textos_idiomas()
+        encontrado = False
+        
+        for idioma_key in data:
+            textos_antes = len(data[idioma_key])
+            data[idioma_key] = [
+                texto for texto in data[idioma_key] 
+                if not (texto.get("id") == texto_id and texto.get("Autor") == autor)
+            ]
+            textos_depois = len(data[idioma_key])
+            
+            if textos_depois < textos_antes:
+                encontrado = True
+                break
+
+        if encontrado:
+            DataManager.salvar_textos_idiomas(data)
+            
+            user_data = usuario.Usuario.usuario_logado
+            if user_data and texto_id in user_data[3]:
+                user_data[3].remove(texto_id)
+                usuario.Usuario.salvar_usuarios(usuario.Usuario.usuarios)
+            
+            return True
+        return False
+        
+    @staticmethod
+    def buscar_texto_por_id(texto_id):
+        data = DataManager.carregar_textos_idiomas()
+        for idioma_key in data:
+            for texto in data[idioma_key]:
+                if texto.get("id") == texto_id:
+                    return texto
+        return None
+
+    @staticmethod
+    def carregar_comentarios():
+        if path.exists(ARQUIVO_COMENTARIOS):
+            with open(ARQUIVO_COMENTARIOS, 'r', encoding='utf-8') as f:
+                try:
+                    return json.load(f)
+                except json.JSONDecodeError:
+                    return {}
+        return {}
+
+    @staticmethod
+    def salvar_comentarios(data):
+        with open(ARQUIVO_COMENTARIOS, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=4, ensure_ascii=False)
+
+    @staticmethod
+    def salvar_comentario(paragrafo_id, autor, texto, tipo='publico'):
+        data = DataManager.carregar_comentarios()
+        paragrafo_id_str = str(paragrafo_id)
+        
+        if paragrafo_id_str not in data:
+            data[paragrafo_id_str] = {'publicos': [], 'privados': {}}
+            
+        comentario = {'autor': autor, 'texto': texto}
+        
+        if tipo == 'publico':
+            data[paragrafo_id_str]['publicos'].append(comentario)
+        elif tipo == 'privado':
+            if autor not in data[paragrafo_id_str]['privados']:
+                data[paragrafo_id_str]['privados'][autor] = []
+            data[paragrafo_id_str]['privados'][autor].append(comentario)
+            
+        DataManager.salvar_comentarios(data)
+
+    @staticmethod
+    def carregar_paragrafos_publicos(visibilidade=None, autor=None):
+        if path.exists(ARQUIVO_PUBLICOS):
+            with open(ARQUIVO_PUBLICOS, 'r', encoding='utf-8') as f:
+                try:
+                    paragrafos = json.load(f)
+                except json.JSONDecodeError:
+                    paragrafos = []
+        else:
+            paragrafos = []
+
+        if visibilidade:
+            paragrafos = [p for p in paragrafos if p.get('visibilidade') == visibilidade]
+        
+        if autor:
+            paragrafos = [p for p in paragrafos if p.get('autor') == autor]
+            
+        return paragrafos
+
+    @staticmethod
+    def salvar_paragrafo_publico(titulo, idioma, texto_original, traducao, visibilidade, paragrafo_numero=None, texto_id=None):
+        paragrafos = DataManager.carregar_paragrafos_publicos()
+        autor = usuario.Usuario.usuario_logado[0] if usuario.Usuario.usuario_logado else 'Desconhecido'
+        
+        novo_id = DataManager.gerar_novo_id()
+        
+        novo_paragrafo = {
+            'id': novo_id,
+            'autor': autor,
+            'idioma': idioma,
+            'texto_original': texto_original,
+            'traducao': traducao,
+            'titulo': titulo,
+            'visibilidade': visibilidade, 
+            'paragrafo_numero': paragrafo_numero,
+            'texto_id': texto_id 
+        }
+        
+        paragrafos.append(novo_paragrafo)
+        
+        with open(ARQUIVO_PUBLICOS, 'w', encoding='utf-8') as f:
+            json.dump(paragrafos, f, indent=4, ensure_ascii=False)
+            
+        return novo_id
+
+    @staticmethod
+    def remover_paragrafo_publico(paragrafo_id):
+        paragrafos = DataManager.carregar_paragrafos_publicos()
+        paragrafos_antes = len(paragrafos)
+        
+        paragrafos = [p for p in paragrafos if p.get('id') != paragrafo_id]
+        
+        if len(paragrafos) < paragrafos_antes:
+            with open(ARQUIVO_PUBLICOS, 'w', encoding='utf-8') as f:
+                json.dump(paragrafos, f, indent=4, ensure_ascii=False)
+            return True
+        return False
+    
+    @staticmethod
+    def publicar_paragrafo(paragrafo_id):
+        paragrafos = DataManager.carregar_paragrafos_publicos()
+        encontrado = False
+        for p in paragrafos:
+            if p.get('id') == paragrafo_id and p.get('visibilidade') == 'privado':
+                p['visibilidade'] = 'publico'
+                encontrado = True
+                break
+        
+        if encontrado:
+            with open(ARQUIVO_PUBLICOS, 'w', encoding='utf-8') as f:
+                json.dump(paragrafos, f, indent=4, ensure_ascii=False)
+            return True
+        return False
+
+    @staticmethod
+    def remover_paragrafos_por_autor(autor):
+        if not path.exists(ARQUIVO_PUBLICOS):
+            return 0
+            
+        paragrafos = DataManager.carregar_paragrafos_publicos()
+        paragrafos_antes = len(paragrafos)
+        
+        paragrafos = [p for p in paragrafos if p.get('autor') != autor]
+        
+        if len(paragrafos) < paragrafos_antes:
+            with open(ARQUIVO_PUBLICOS, 'w', encoding='utf-8') as f:
+                json.dump(paragrafos, f, indent=4, ensure_ascii=False)
+            return paragrafos_antes - len(paragrafos)
+        return 0
+
+
+    @staticmethod
+    def mostrar_rankings_gerais():
+        usuarios_data = usuario.Usuario.carregar_usuarios()
+        
+        rankings = sorted(usuarios_data, key=lambda x: x[4], reverse=True)
+        
+        util.limpar_tela()
         print('=' * 50)
-        print('      🏆 ORBITEXT - RANKING GERAL DE LEITORES 🏆')
+        print("      🏆 RANKING GERAL DE XP")
         print('=' * 50)
-        print('Abaixo está uma simulação de leitores com maior pontuação:')
-        print('-' * 50)
-        rankings_simulados = [
-            (1, 'Alice', 1500),
-            (2, 'Bob', 1200),
-            (3, 'Charlie', 900)
-        ]
-        print(f"{'POS':<5}{'NOME':<30}{'PONTOS':>10}")
-        print('-' * 50)
-        for pos, nome, pontos in rankings_simulados:
-            print(f"{pos:<5}{nome:<30}{pontos:>10}")
-        print('-' * 50)
+        
+        for i, user in enumerate(rankings):
+            nome = user[0]
+            xp = user[4]
+            nivel = usuario.Usuario.calcular_nivel(xp)
+            emoji = usuario.Usuario.obter_emoji_nivel(nivel)
+            
+            print(f" {i+1}º | {nome}: \033[33m{nivel} {emoji}\033[m ({xp} XP)")
+            
+        print('=' * 50)
         input("Pressione ENTER para voltar ao Menu Principal...")
-        system('cls')
-        
-
-class Colocar_jsson: 
-    @staticmethod
-    def carregar_textos_por_idioma():
-        try:
-            with open(NOME_ARQUIVO, 'r', encoding='utf-8') as arquivo:
-                return json.load(arquivo)
-        except FileNotFoundError:
-            return {}
-        except json.JSONDecodeError:
-            print("Aviso: Arquivo JSON corrompido ou vazio. Iniciando com dados vazios.")
-            return {}
-
-    @staticmethod
-    def salvar_textos_por_idioma(textos):
-        try:
-            with open(NOME_ARQUIVO, 'w', encoding='utf-8') as arquivo:
-                json.dump(textos, arquivo, indent=4, ensure_ascii=False)
-        except Exception as e:
-            print(f"ERRO ao salvar textos: {e}")
-            
-    @staticmethod
-    def mostrar_textos_por_idioma():
-        textos_por_idioma = Colocar_jsson.carregar_textos_por_idioma()
-        
-        while True:
-            system('cls')
-            print('=' * 50)
-            print('          LEITURA EM OUTRO IDIOMA')
-            print('=' * 50)
-            
-            idiomas = list(textos_por_idioma.keys())
-            if not idiomas:
-                print("Nenhum texto disponível para leitura.")
-                input("Pressione ENTER para voltar...")
-                break
-
-            for i, idioma in enumerate(idiomas):
-                print(f" {i+1} - {idioma}")
-            print(" 0 - Voltar ao Menu Principal")
-            print('=' * 50)
-
-            try:
-                escolha_idioma = int(input("Escolha o idioma (0-{}): ".format(len(idiomas))))
-            except ValueError:
-                system('cls')
-                print('\033[31mERRO: Escolha entre os números definidos.\033[m')
-                sleep(1.5)
-                continue
-
-            if escolha_idioma == 0:
-                break
-            
-            if 1 <= escolha_idioma <= len(idiomas):
-                idioma_selecionado = idiomas[escolha_idioma - 1]
-                textos_do_idioma = textos_por_idioma[idioma_selecionado]
-
-                while True:
-                    system('cls')
-                    print('=' * 50)
-                    print(f"      TEXTOS DISPONÍVEIS em {idioma_selecionado}")
-                    print('=' * 50)
-                    
-                    for i, texto in enumerate(textos_do_idioma):
-                        print(f" {i+1} - {texto.get('Titulo', 'N/A')} por {texto.get('Autor', 'Autor Desconhecido')}")
-                    print(" 0 - Voltar à seleção de idioma")
-                    print('=' * 50)
-
-                    try:
-                        escolha_texto = int(input("Escolha o texto para ler (0-{}): ".format(len(textos_do_idioma))))
-                    except ValueError:
-                        system('cls')
-                        print('\033[31mERRO: Escolha entre os números definidos.\033[m')
-                        sleep(1.5)
-                        continue
-                    
-                    if escolha_texto == 0:
-                        break
-                    
-                    if 1 <= escolha_texto <= len(textos_do_idioma):
-                        texto_selecionado = textos_do_idioma[escolha_texto - 1]
-                        paragrafos = texto_selecionado.get('Paragrafos', [])
-                        
-                        while True:
-                            system('cls')
-                            print('=' * 50)
-                            print(f"      LENDO: {texto_selecionado.get('Titulo', 'N/A')}")
-                            print('=' * 50)
-
-                            for i, paragrafo in enumerate(paragrafos):
-                                texto = paragrafo.get('Lingua', 'N/A')
-                                print(f"\n[Parágrafo {i+1}]")
-                                print(texto)
-                            
-                            print('\n' + '=' * 50)
-                            print(' 1 - Ver Tradução de um Parágrafo')
-                            print(' 2 - Salvar um Parágrafo')
-                            print(' 0 - Voltar para a seleção de textos')
-                            print('=' * 50)
-
-                            try:
-                                escolha_acão = int(input("Escolha uma ação (0-2): "))
-                            except ValueError:
-                                print('\033[31mERRO: Escolha entre os números definidos.\033[m')
-                                sleep(1.5)
-                                continue
-
-                            if escolha_acão == 0:
-                                break
-                            
-                            elif escolha_acão == 1:
-                                while True:
-                                    try:
-                                        escolha_paragrafo = int(input(f"Qual parágrafo você deseja ver a tradução? (1-{len(paragrafos)}, 0 para cancelar): "))
-                                    except ValueError:
-                                        print("\033[31mEntrada inválida. Digite um número.\033[m")
-                                        sleep(2)
-                                        continue
-                                        
-                                    if escolha_paragrafo == 0:
-                                        break
-                                        
-                                    if 1 <= escolha_paragrafo <= len(paragrafos):
-                                        paragrafo = paragrafos[escolha_paragrafo - 1]
-                                        print('\n' + '-' * 50)
-                                        print(f"TRADUÇÃO do Parágrafo {escolha_paragrafo}:")
-                                        print(paragrafo.get('portugues', 'Tradução não disponível.'))
-                                        print('-' * 50)
-                                        input("Pressione ENTER para continuar lendo...")
-                                        break
-                                    else:
-                                        print("\033[31mOpção inválida.\033[m")
-                                        sleep(1.5)
-                            
-                            elif escolha_acão == 2:
-                                while True:
-                                    try:
-                                        escolha_paragrafo = int(input(f"Qual parágrafo você deseja salvar? (1-{len(paragrafos)}, 0 para cancelar): "))
-                                    except ValueError:
-                                        print("\033[31mEntrada inválida. Digite um número.\033[m")
-                                        sleep(2)
-                                        continue
-                                        
-                                    if escolha_paragrafo == 0:
-                                        break
-                                        
-                                    if 1 <= escolha_paragrafo <= len(paragrafos):
-                                        paragrafo = paragrafos[escolha_paragrafo - 1]
-                                        
-                                        texto_original = paragrafo.get('Lingua', 'N/A')
-                                        traducao = paragrafo.get('portugues', 'N/A')
-                                        titulo = texto_selecionado.get('Titulo', 'N/A')
-
-                                        while True:
-                                            print("\nDefinir Visibilidade:")
-                                            print(" 1 - Público")
-                                            print(" 2 - Privado")
-                                            print(" 0 - Cancelar Salvamento")
-                                            
-                                            visibilidade_input = input("Escolha a opção (0-2): ").strip()
-                                            
-                                            if visibilidade_input == '0':
-                                                visibilidade = None
-                                                break
-                                            elif visibilidade_input == '1':
-                                                visibilidade = 'publico'
-                                                break
-                                            elif visibilidade_input == '2':
-                                                visibilidade = 'privado'
-                                                break
-                                            else:
-                                                print("\033[31mOpção inválida. Digite 1, 2 ou 0.\033[m")
-                                                sleep(1.5)
-                                                
-                                        if visibilidade is None:
-                                            break
-                                                
-                                        paragrafo_salvo = usuario.Usuario.salvar_paragrafo(
-                                            idioma=idioma_selecionado, 
-                                            texto_original=texto_original, 
-                                            traducao=traducao,
-                                            titulo=titulo,
-                                            visibilidade=visibilidade
-                                        )
-                                        
-                                        if paragrafo_salvo:
-                                            print('\033[32mParágrafo salvo com sucesso!\033[m')
-                                            sleep(2)
-                                            break
-                                    else:
-                                        print("\033[31mOpção inválida.\033[m")
-                                        sleep(1.5)
-                            else:
-                                print("\nOpção de ação inválida.")
-                                sleep(1.5)
-                                system('cls')
-                                continue
-                    else:
-                        print("\nOpção de texto inválida.")
-                        sleep(1.5)
-                        system('cls')
-                        continue
-            else:
-                print("\nOpção de idioma inválida.")
-                sleep(1.5)
-                system('cls')
-                continue
