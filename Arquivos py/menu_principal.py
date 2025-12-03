@@ -81,26 +81,27 @@ def adicionar_texto_personalizado():
     if not traducao:
         traducao = "[SEM TRADUÇÃO]"
 
-    visibilidade = ''
-    while visibilidade not in ['1', '2']:
+    while True:
         print('\nEscolha a visibilidade do parágrafo:')
         print(' 1 - Público')
         print(' 2 - Privado')
         print(' 0 - Sair (Não salvar)')
         print('=' * 50)
-        
+
         escolha_visibilidade = input("Opção: ").strip()
-        
+
         if escolha_visibilidade == '0':
             util.limpar_tela()
             print('\033[33mOperação cancelada. Parágrafo não salvo.\033[m')
             sleep(2)
             return
-            
+
         if escolha_visibilidade == '1':
             visibilidade = 'publico'
+            break
         elif escolha_visibilidade == '2':
             visibilidade = 'privado'
+            break
         else:
             print('\033[31mOpção inválida. Digite 1, 2 ou 0.\033[m')
             sleep(1.5)
@@ -118,19 +119,30 @@ def adicionar_texto_personalizado():
         "visibilidade": visibilidade
     }
     
-    if dados.DataManager.adicionar_texto_idioma(idioma_key, novo_paragrafo):
-        if visibilidade == 'publico':
-            dados.DataManager.salvar_paragrafo_publico(novo_paragrafo)
-            
-        usuario.Usuario.usuario_logado[3].append(novo_id)
-        usuario.Usuario.salvar_usuarios(usuario.Usuario.usuarios)
-        
+    try:
+        salvo_id = dados.DataManager.salvar_paragrafo_publico(
+            titulo,
+            idioma_key,
+            paragrafo_original,
+            traducao,
+            visibilidade
+        )
+
+        if usuario.Usuario.usuario_logado is not None:
+            try:
+                usuario.Usuario.usuarios
+            except Exception:
+                usuario.Usuario.usuarios = usuario.Usuario.carregar_usuarios()
+
+            usuario.Usuario.usuario_logado[3].append(salvo_id)
+            usuario.Usuario.salvar_usuarios(usuario.Usuario.usuarios)
+
         util.limpar_tela()
         print('\033[32m✅ Parágrafo adicionado com sucesso!\033[m')
         sleep(2)
-    else:
+    except Exception as e:
         util.limpar_tela()
-        print('\033[31m❌ Falha ao adicionar o parágrafo. Idioma inválido ou erro de escrita.\033[m')
+        print(f'\033[31m❌ Falha ao adicionar o parágrafo: {e}\033[m')
         sleep(2)
 
 
@@ -202,7 +214,31 @@ def menu_principal():
                 usuario.Usuario.mostrar_paragrafos_publicos()
 
             elif numero == 4:
-                adicionar_texto_personalizado()
+                while True:
+                    util.limpar_tela()
+                    print('=' * 50)
+                    print('      ➕ ADICIONAR / REGISTRAR TEXTOS')
+                    print('=' * 50)
+                    print(' 1 - Adicionar Parágrafo Personalizado (rápido)')
+                    print(' 2 - Registrar Texto Completo (salva em textos_idiomas.json)')
+                    print(' 0 - Voltar')
+                    print('=' * 50)
+                    sub = input('Opção: ').strip()
+                    if sub == '1':
+                        adicionar_texto_personalizado()
+                        break
+                    elif sub == '2':
+                        try:
+                            menu_leitura.criar_e_salvar_novo_texto()
+                        except Exception as e:
+                            print(f"\033[31mErro ao abrir registro de texto: {e}\033[m")
+                            sleep(1.5)
+                        break
+                    elif sub == '0':
+                        break
+                    else:
+                        print('\033[31mOpção inválida.\033[m')
+                        sleep(1)
 
             elif numero == 5:
                 dados.DataManager.mostrar_rankings_gerais()

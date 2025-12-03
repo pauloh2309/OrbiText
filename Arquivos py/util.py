@@ -10,7 +10,7 @@ def redirecionador():
     webbrowser.open()
 
 def normalize_text(text):
-    """Normaliza o texto (lower, sem acentos, sem espaços) para ser usado como chave de dicionário."""
+   
     text = text.lower().strip()
  
     text = ''.join(c for c in unicodedata.normalize('NFD', text)

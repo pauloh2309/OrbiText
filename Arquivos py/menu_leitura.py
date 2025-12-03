@@ -116,7 +116,7 @@ def exibir_texto(texto, modo, idioma_key):
         paragrafos_exibidos = exibir_paragrafos_organizado(paragrafos, indice_atual, num_mostrar, idioma_key)
         
         
-        # --- Lógica de Salvar Parágrafo ---
+ 
         while True:
             print('\n' + '~' * 50)
             print("AÇÕES DE SALVAMENTO DE PARÁGRAFOS:")
@@ -126,12 +126,11 @@ def exibir_texto(texto, modo, idioma_key):
             acao_paragrafo = input("Opção (Número do Parágrafo | 0): ").strip()
             
             if acao_paragrafo == '0':
-                break  # Continua a leitura
+                break  
             
             try:
                 num_paragrafo_escolhido = int(acao_paragrafo)
                 
-                # Verifica se o número do parágrafo está dentro do bloco exibido
                 if indice_atual + 1 <= num_paragrafo_escolhido <= indice_atual + paragrafos_exibidos:
                     
                     if not usuario.Usuario.usuario_logado:
@@ -139,12 +138,10 @@ def exibir_texto(texto, modo, idioma_key):
                         sleep(2)
                         continue
 
-                    # Índice interno na lista de parágrafos (base 0)
                     indice_paragrafo_salvar = num_paragrafo_escolhido - 1
                     paragrafo_obj = paragrafos[indice_paragrafo_salvar]
                     titulo_paragrafo = texto['Titulo']
                     
-                    # Novo menu de escolha de visibilidade
                     print('\n--- ESCOLHA A VISIBILIDADE ---')
                     print(" 1 - Publicar Parágrafo (Para todos verem)")
                     print(" 2 - Salvar Parágrafo (Apenas para você)")
@@ -155,12 +152,13 @@ def exibir_texto(texto, modo, idioma_key):
                         modo_salvamento = input("Opção: ").strip()
                         
                         if modo_salvamento == '0':
-                            break # Volta para a seleção do número do parágrafo
+                            break 
                         
                         if modo_salvamento in ['1', '2']:
                             tipo_visibilidade = 'publico' if modo_salvamento == '1' else 'privado'
                             
-                            dados.DataManager.salvar_paragrafo_publico(
+
+                            salvo_id = dados.DataManager.salvar_paragrafo_publico(
                                 titulo_paragrafo,
                                 idioma_key,
                                 paragrafo_obj.get('Lingua'),
@@ -169,9 +167,14 @@ def exibir_texto(texto, modo, idioma_key):
                                 paragrafo_numero=num_paragrafo_escolhido,
                                 texto_id=texto.get('id', dados.DataManager.gerar_novo_id())
                             )
+                            if salvo_id and usuario.Usuario.usuario_logado:
+                                if not usuario.Usuario.usuarios:
+                                    usuario.Usuario.usuarios = usuario.Usuario.carregar_usuarios()
+                                usuario.Usuario.usuario_logado[3].append(salvo_id)
+                                usuario.Usuario.salvar_usuarios(usuario.Usuario.usuarios)
                             print(f'\033[32mParágrafo {num_paragrafo_escolhido} salvo como {tipo_visibilidade} com sucesso!\033[m')
                             sleep(1.5)
-                            break # Sai do loop de modo_salvamento e volta para a seleção do parágrafo
+                            break 
                         else:
                             print("\033[31mOpção de visibilidade inválida. Digite 1, 2 ou 0.\033[m")
                             sleep(1)
@@ -182,7 +185,6 @@ def exibir_texto(texto, modo, idioma_key):
             except ValueError:
                 print("\033[31mEntrada inválida. Digite o número do parágrafo ou 0.\033[m")
                 sleep(1.5)
-        # --- Fim da Lógica de Salvar Parágrafo ---
 
         indice_atual += paragrafos_exibidos
         
@@ -345,11 +347,21 @@ def criar_e_salvar_novo_texto():
         return
 
     while True:
-        idioma_original = input("Digite o Idioma Original (English, French, Spanish): ").strip().capitalize()
-        if idioma_original.lower() in ['english', 'french', 'spanish']:
+        limpar_tela()
+        print('Escolha o idioma original:')
+        print(' 1 - English')
+        print(' 2 - French')
+        print(' 3 - Spanish')
+        print(' 0 - Cancelar')
+        escolha_idioma = input('Opção: ').strip()
+        if escolha_idioma == '0':
+            return
+        mapa = {'1': 'English', '2': 'French', '3': 'Spanish'}
+        if escolha_idioma in mapa:
+            idioma_original = mapa[escolha_idioma]
             break
         else:
-            print("\033[31mIdioma inválido. Use: English, French ou Spanish.\033[m")
+            print("\033[31mIdioma inválido. Digite 1, 2, 3 ou 0.\033[m")
             sleep(1)
             
     lista_paragrafos = []
@@ -357,20 +369,19 @@ def criar_e_salvar_novo_texto():
     
     while True:
         limpar_tela()
-        print(f"--- Adicionando Parágrafo {num_paragrafo} (ou digite 'sair' para terminar) ---")
-        
+        print(f"--- Adicionando Parágrafo {num_paragrafo} ---")
+        print("Digite 0 para cancelar a criação do texto e voltar ao menu.")
+        print('=' * 50)
         texto_original = input(f"[{idioma_original}] Parágrafo Original: ").strip()
-        
-        if texto_original.lower() == 'sair':
-            break
-        
+        if texto_original == '0':
+            return
         if not texto_original:
             print("\033[31mO parágrafo original não pode ser vazio.\033[m")
             sleep(1.5)
             continue
-            
         texto_traducao = input("[Português] Tradução correspondente: ").strip()
-        
+        if texto_traducao == '0':
+            return
         if not texto_traducao:
             print("\033[31mA tradução não pode ser vazia.\033[m")
             sleep(1.5)
@@ -378,9 +389,17 @@ def criar_e_salvar_novo_texto():
 
         lista_paragrafos.append({'original': texto_original, 'traducao': texto_traducao})
         num_paragrafo += 1
-        
-        continuar = input("\n[ENTER] para adicionar outro parágrafo, ou digite 'parar' para finalizar: ").strip().lower()
-        if continuar == 'parar':
+        while True:
+            print('\nEscolha: 1 - Adicionar outro parágrafo | 0 - Finalizar texto e salvar')
+            escolha_cont = input('Opção (0/1): ').strip()
+            if escolha_cont == '1':
+                break
+            elif escolha_cont == '0':
+                break
+            else:
+                print("\033[31mOpção inválida. Digite 1 ou 0.\033[m")
+                sleep(1)
+        if escolha_cont == '0':
             break
 
     if not lista_paragrafos:
@@ -390,48 +409,240 @@ def criar_e_salvar_novo_texto():
 
     print('\n' + '=' * 50)
     print(f"Você criou um texto com {len(lista_paragrafos)} parágrafo(s).")
-    salvar = input("Deseja SALVAR este texto? (s/n): ").strip().lower()
-
-    if salvar == 's':
-        dados.DataManager.salvar_texto_personalizado(titulo, idioma_original, lista_paragrafos)
-    else:
-        print("\033[33mTexto descartado. Voltando ao menu...\033[m")
-        sleep(2)
+    print('\nEscolha: 1 - Salvar texto | 0 - Descartar')
+    while True:
+        salvar = input('Opção (0/1): ').strip()
+        if salvar == '1':
+            dados.DataManager.salvar_texto_personalizado(titulo, idioma_original, lista_paragrafos)
+            break
+        elif salvar == '0':
+            print("\033[33mTexto descartado. Voltando ao menu...\033[m")
+            sleep(2)
+            break
+        else:
+            print("\033[31mOpção inválida. Digite 1 ou 0.\033[m")
+            sleep(1)
 
 def ver_comentarios(paragrafo_id):
     limpar_tela()
-    comentarios_data = dados.DataManager.carregar_comentarios()
-    paragrafo_id_str = str(paragrafo_id)
-    
-    if paragrafo_id_str not in comentarios_data:
-        print("Nenhum comentário encontrado para este parágrafo.")
-        input("\nPressione ENTER para voltar...")
-        return
+    parag = next((p for p in dados.DataManager.carregar_paragrafos_publicos() if p.get('id') == str(paragrafo_id)), None)
+    if parag:
+        publicos = parag.get('comentarios_publicos', [])
+        privados = parag.get('comentarios_privados', {})
+        print('=' * 50)
+        print('      💬 COMENTÁRIOS PÚBLICOS')
+        print('=' * 50)
+        if publicos:
+            for i, c in enumerate(publicos):
+                likes_count = dados.DataManager.obter_likes_comentario(f"{paragrafo_id}:c:{i}")
+                print(f"[{i+1}] {c.get('autor', 'anon')}: {c.get('texto')} ❤️  {likes_count}")
+        else:
+            print('Nenhum comentário público.')
 
+        if usuario.Usuario.usuario_logado:
+            nome_usuario = usuario.Usuario.usuario_logado[0]
+            comentarios_privados = privados.get(nome_usuario, [])
+            print('\n' + '=' * 50)
+            print('      🔒 SEUS COMENTÁRIOS PRIVADOS')
+            print('=' * 50)
+            if comentarios_privados:
+                for i, c in enumerate(comentarios_privados):
+                    print(f"[{i+1}] Você: {c.get('texto')}")
+            else:
+                print('Nenhum comentário privado seu.')
+
+        can_public = parag.get('visibilidade') != 'privado'
+        print('\n' + '=' * 50)
+        if can_public:
+            print(' 1 - Adicionar Comentário Público')
+            print(' 2 - Adicionar Comentário Privado')
+            print(' 3 - Curtir/Descurtir um Comentário Público')
+        else:
+            print(' 1 - (Comentário público indisponível para este parágrafo)')
+            print(' 2 - Adicionar Comentário Privado')
+            print(' 3 - Curtir/Descurtir um Comentário Público')
+        print(' 0 - Voltar')
+        print('=' * 50)
+
+        while True:
+            opcao = input('Opção: ').strip()
+            if opcao == '0':
+                break
+            elif opcao == '3':
+                
+                if not publicos:
+                    print('\033[33mNenhum comentário público para curtir.\033[m')
+                    sleep(1.5)
+                    continue
+                
+                if not usuario.Usuario.usuario_logado:
+                    print('\033[31mÉ necessário estar logado para curtir comentários.\033[m')
+                    sleep(2)
+                    continue
+                
+                print('Qual comentário você deseja curtir/descurtir?')
+                for i, c in enumerate(publicos):
+                    likes_count = dados.DataManager.obter_likes_comentario(f"{paragrafo_id}:c:{i}")
+                    usuario_curtiu = dados.DataManager.usuario_curtiu_comentario(f"{paragrafo_id}:c:{i}", usuario.Usuario.usuario_logado[0])
+                    status = '✓ (você curtiu)' if usuario_curtiu else ''
+                    print(f"[{i+1}] {c.get('texto')[:50]}... ❤️  {likes_count} {status}")
+                print('[0] Cancelar')
+                
+                escolha_com = input('Opção: ').strip()
+                if escolha_com == '0':
+                    continue
+                
+                try:
+                    idx_com = int(escolha_com) - 1
+                    if 0 <= idx_com < len(publicos):
+                        usuario_nome = usuario.Usuario.usuario_logado[0]
+                        comentario_id = f"{paragrafo_id}:c:{idx_com}"
+                        
+                        if dados.DataManager.usuario_curtiu_comentario(comentario_id, usuario_nome):
+                            
+                            if dados.DataManager.descurtir_comentario(comentario_id, usuario_nome):
+                                print('\033[32mCurtida removida!\033[m')
+                            else:
+                                print('\033[31mErro ao remover curtida.\033[m')
+                        else:
+                            
+                            if dados.DataManager.curtir_comentario(comentario_id, usuario_nome):
+                                print('\033[32mComentário curtido!\033[m')
+                            else:
+                                print('\033[31mErro ao curtir comentário.\033[m')
+                        
+                        sleep(1.5)
+                        ver_comentarios(paragrafo_id)
+                        return
+                    else:
+                        print('\033[31mOpção inválida.\033[m')
+                        sleep(1)
+                except ValueError:
+                    print('\033[31mEntrada inválida.\033[m')
+                    sleep(1)
+                    
+            elif opcao in ['1', '2']:
+                if not usuario.Usuario.usuario_logado:
+                    print('\033[31mÉ necessário estar logado para comentar.\033[m')
+                    sleep(2)
+                    continue
+                comentario_texto = input('Digite seu comentário: ').strip()
+                if not comentario_texto:
+                    print('\033[31mO comentário não pode ser vazio.\033[m')
+                    sleep(1.5)
+                    continue
+                autor = usuario.Usuario.usuario_logado[0]
+                tipo = 'publico' if opcao == '1' else 'privado'
+                
+                res = dados.DataManager.salvar_comentario(paragrafo_id, autor, comentario_texto, tipo)
+                if res is False:
+                    print('\033[31mNão é possível adicionar comentário público a um parágrafo privado.\033[m')
+                    sleep(1.5)
+                    return
+                print(f"\033[32mComentário {tipo} salvo com sucesso!\033[m")
+                sleep(1.5)
+                ver_comentarios(paragrafo_id)
+                return
+            else:
+                print('\033[31mOpção inválida.\033[m')
+                sleep(1)
+        return
+    pid_str = str(paragrafo_id)
+    if ':' in pid_str:
+        tid, idx = pid_str.split(':', 1)
+        try:
+            idxn = int(idx)
+        except Exception:
+            idxn = None
+        if idxn is not None:
+            data_textos = dados.DataManager.carregar_textos_idiomas()
+            for idioma_key in data_textos:
+                for texto_obj in data_textos[idioma_key]:
+                    if texto_obj.get('id') == tid:
+                        pargs = texto_obj.get('Paragrafos', [])
+                        if 0 <= idxn < len(pargs):
+                            par = pargs[idxn]
+                            publicos = par.get('comentarios_publicos', [])
+                            privados = par.get('comentarios_privados', {})
+                            print('=' * 50)
+                            print('      💬 COMENTÁRIOS PÚBLICOS')
+                            print('=' * 50)
+                            if publicos:
+                                for i, c in enumerate(publicos):
+                                    print(f"[{i+1}] {c.get('autor','anon')}: {c.get('texto')}")
+                            else:
+                                print('Nenhum comentário público.')
+                            if usuario.Usuario.usuario_logado:
+                                nome_usuario = usuario.Usuario.usuario_logado[0]
+                                comentarios_privados = privados.get(nome_usuario, [])
+                                print('\n' + '=' * 50)
+                                print('      🔒 SEUS COMENTÁRIOS PRIVADOS')
+                                print('=' * 50)
+                                if comentarios_privados:
+                                    for i, c in enumerate(comentarios_privados):
+                                        print(f"[{i+1}] Você: {c.get('texto')}")
+                                else:
+                                    print('Nenhum comentário privado seu.')
+                            print('\n' + '=' * 50)
+                            print(' 1 - Adicionar Comentário Público')
+                            print(' 2 - Adicionar Comentário Privado')
+                            print(' 0 - Voltar')
+                            print('=' * 50)
+                            while True:
+                                opcao = input('Opção: ').strip()
+                                if opcao == '0':
+                                    return
+                                elif opcao in ['1','2']:
+                                    if not usuario.Usuario.usuario_logado:
+                                        print('\033[31mÉ necessário estar logado para comentar.\033[m')
+                                        sleep(2)
+                                        continue
+                                    comentario_texto = input('Digite seu comentário: ').strip()
+                                    if not comentario_texto:
+                                        print('\033[31mO comentário não pode ser vazio.\033[m')
+                                        sleep(1.5)
+                                        continue
+                                    autor = usuario.Usuario.usuario_logado[0]
+                                    tipo = 'publico' if opcao == '1' else 'privado'
+                                    res = dados.DataManager.salvar_comentario(pid_str, autor, comentario_texto, tipo)
+                                    if res is False:
+                                        print('\033[31mNão é possível adicionar comentário público a um parágrafo privado.\033[m')
+                                        sleep(1.5)
+                                        return
+                                    print(f"\033[32mComentário {tipo} salvo com sucesso!\033[m")
+                                    sleep(1.5)
+                                    return
+                                else:
+                                    print('\033[31mOpção inválida.\033[m')
+                                    sleep(1)
+    comentarios_data = dados.DataManager.carregar_comentarios()
+    paragrafo_id_str = pid_str
+    if paragrafo_id_str not in comentarios_data:
+        print('Nenhum comentário encontrado para este parágrafo.')
+        input('\nPressione ENTER para voltar...')
+        return
     data_paragrafo = comentarios_data[paragrafo_id_str]
 
     print('=' * 50)
-    print("      💬 COMENTÁRIOS PÚBLICOS")
+    print('      💬 COMENTÁRIOS PÚBLICOS')
     print('=' * 50)
     if data_paragrafo['publicos']:
         for i, c in enumerate(data_paragrafo['publicos']):
             print(f"[{i+1}] {c['autor']}: {c['texto']}")
     else:
-        print("Nenhum comentário público.")
-    
+        print('Nenhum comentário público.')
 
     if usuario.Usuario.usuario_logado:
         nome_usuario = usuario.Usuario.usuario_logado[0]
         comentarios_privados = data_paragrafo['privados'].get(nome_usuario, [])
-        
         print('\n' + '=' * 50)
-        print("      🔒 SEUS COMENTÁRIOS PRIVADOS")
+        print('      🔒 SEUS COMENTÁRIOS PRIVADOS')
         print('=' * 50)
         if comentarios_privados:
             for i, c in enumerate(comentarios_privados):
                 print(f"[{i+1}] Você: {c['texto']}")
         else:
-            print("Nenhum comentário privado seu.")
+            print('Nenhum comentário privado seu.')
     
     print('\n' + '=' * 50)
     print(" 1 - Adicionar Comentário Público")
@@ -486,7 +697,13 @@ def menu_ver_paragrafos_publicos():
         
         for i, p in enumerate(paragrafos):
             paragrafo_ref = f" - Parágrafo {p.get('paragrafo_numero', 'N/A')}" if p.get('paragrafo_numero') else ''
-            print(f"{i + 1} - {p['titulo']}{paragrafo_ref} ({p['idioma']}) por {p['autor']}")
+            texto_assoc = ''
+            if p.get('texto_id'):
+                t = dados.DataManager.buscar_texto_por_id(p.get('texto_id'))
+                if t:
+                    texto_assoc = f" [do texto: {t.get('Titulo')}]"
+            idioma_nome = dados.DataManager.IDIOMAS_NOMES.get(p.get('idioma'), p.get('idioma'))
+            print(f"{i + 1} - {p.get('titulo') or '[sem título]'}{paragrafo_ref}{texto_assoc} ({idioma_nome}) por {p.get('autor')}")
             
         print("0 - Voltar")
         print('=' * 50)
@@ -513,7 +730,24 @@ def menu_ver_paragrafos_publicos():
             print(paragrafo_escolhido['traducao'])
             print('\n' + '=' * 50)
             
-            print(" 1 - Ver/Adicionar Comentários")
+            
+            num_likes = dados.DataManager.obter_likes_paragrafo(paragrafo_escolhido['id'])
+            print(f"❤️  {num_likes} curtida(s)")
+            
+            
+            usuario_curtiu = False
+            if usuario.Usuario.usuario_logado:
+                usuario_curtiu = dados.DataManager.usuario_curtiu_paragrafo(
+                    paragrafo_escolhido['id'], 
+                    usuario.Usuario.usuario_logado[0]
+                )
+            
+            print("\n 1 - Ver/Adicionar Comentários")
+            if usuario.Usuario.usuario_logado:
+                if usuario_curtiu:
+                    print(" 2 - Remover minha curtida")
+                else:
+                    print(" 2 - Curtir este parágrafo")
             print(" 0 - Voltar para a lista")
             print('=' * 50)
             
@@ -522,6 +756,55 @@ def menu_ver_paragrafos_publicos():
                 if sub_opcao == '1':
                     ver_comentarios(paragrafo_escolhido['id'])
  
+                elif sub_opcao == '2':
+                    if not usuario.Usuario.usuario_logado:
+                        print("\033[31mÉ necessário estar logado para curtir.\033[m")
+                        sleep(1.5)
+                        continue
+                    
+                    usuario_nome = usuario.Usuario.usuario_logado[0]
+                    paragrafo_id = paragrafo_escolhido['id']
+                    
+                    if usuario_curtiu:
+                        
+                        if dados.DataManager.descurtir_paragrafo(paragrafo_id, usuario_nome):
+                            print("\033[32mCurtida removida!\033[m")
+                            usuario_curtiu = False
+                        else:
+                            print("\033[31mErro ao remover curtida.\033[m")
+                    else:
+                       
+                        if dados.DataManager.curtir_paragrafo(paragrafo_id, usuario_nome):
+                            print("\033[32mParágrafo curtido!\033[m")
+                            usuario_curtiu = True
+                        else:
+                            print("\033[31mVocê já curtiu este parágrafo.\033[m")
+                    
+                    sleep(1.5)
+                    limpar_tela()
+                    print('=' * 50)
+                    print(f"      PARÁGRAFO: {paragrafo_escolhido['titulo'].upper()}")
+                    print(f"      AUTOR: {paragrafo_escolhido['autor']}")
+                    print('=' * 50)
+                    print(f"\n[{paragrafo_escolhido['idioma']}]")
+                    print(paragrafo_escolhido['texto_original'])
+                    print("\n[Português]")
+                    print(paragrafo_escolhido['traducao'])
+                    print('\n' + '=' * 50)
+                    
+                    
+                    num_likes = dados.DataManager.obter_likes_paragrafo(paragrafo_escolhido['id'])
+                    print(f"❤️  {num_likes} curtida(s)")
+                    
+                    print("\n 1 - Ver/Adicionar Comentários")
+                    if usuario.Usuario.usuario_logado:
+                        if usuario_curtiu:
+                            print(" 2 - Remover minha curtida")
+                        else:
+                            print(" 2 - Curtir este parágrafo")
+                    print(" 0 - Voltar para a lista")
+                    print('=' * 50)
+                    
                 elif sub_opcao == '0':
                     break
                 else:

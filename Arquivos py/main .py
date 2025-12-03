@@ -1,7 +1,7 @@
 import usuario
 import recuperação_senha
 import menu_principal
-from util import limpar_tela 
+from util import limpar_tela
 from time import sleep 
 
 if 'Usuario' in dir(usuario) and hasattr(usuario.Usuario, 'carregar_usuarios'):
@@ -12,8 +12,11 @@ def handle_cadastro():
     print("\n--- INICIANDO CADASTRO (INTERAJA ABAIXO) ---")
     
     try:
-        usuario.Usuario.cadastrar_usuario(usuario.Usuario.usuarios)
-        print('\033[32mProcesso de cadastro concluído. Retornando ao menu principal...\033[m')
+        resultado = usuario.Usuario.cadastrar_usuario(usuario.Usuario.usuarios)
+        if resultado:
+            print('\033[32mProcesso de cadastro concluído. Retornando ao menu principal...\033[m')
+        else:
+            print('\033[33mCadastro não concluído. Voltando ao menu principal...\033[m')
         sleep(2)
     except Exception as e:
         print(f"\033[31mERRO durante o cadastro: {e}\033[m")
@@ -22,12 +25,13 @@ def handle_cadastro():
 def handle_login():
     limpar_tela()
     print("\n--- INICIANDO LOGIN (INTERAJA ABAIXO) ---")
-    
     try:
+        
+        usuario.Usuario.usuarios = usuario.Usuario.carregar_usuarios()
         usuario.Usuario.fazer_login(usuario.Usuario.usuarios)
     except Exception as e:
-         print(f"\033[31mERRO durante o login: {e}\033[m")
-         sleep(2)
+        print(f"\033[31mERRO durante o login: {e}\033[m")
+        sleep(2)
 
 def handle_recuperacao():
     limpar_tela()
