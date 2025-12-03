@@ -16,14 +16,6 @@
         0
     ],
     [
-        "naosei1",
-        "Naosei123@",
-        "naosei@gmail.com",
-        [],
-        1,
-        0
-    ],
-    [
         "testando123",
         "Testando1@",
         "testando@gmail.com",
@@ -61,15 +53,20 @@
         "pauloh2309186@gmail.com",
         [
             {
-                "texto_original": "La primera habilidad diplom\u00e1tica en juego es la de anticipaci\u00f3n, a lo que la IA puede ofrecer como oportunidad y a los peligros que puede envolver su adopci\u00f3n sin miramientos. La fe ciega en la tecnolog\u00eda conduce a tecnocracia y a ceder inteligencia humana, rindi\u00e9ndose a procesos automatizados y distantes en los que se pierde control. Y un \u00e1rea de pol\u00edtica p\u00fablica tan relevante como la de las relaciones internacionales, \u00edntimamente ligada a principios de soberan\u00eda, cooperaci\u00f3n y subsidiariedad, poco podr\u00eda prosperar y mantenerse con el nivel de autonom\u00eda necesaria para honrar la funci\u00f3n p\u00fablica para la que fue dise\u00f1ada al servicio de los Estados y sus sistemas intergubernamentales, si sucumbiera a dichos procesos. Un nuevo paradigma de gobernanza digital se viene configurando con sucesivas aproximaciones desde lo normativo por parte de actores internacionales de primer orden, representativos de diversos sistemas legales. El debate de fondo es entre la utilidad de la tecnolog\u00eda y su neutralidad socio-pol\u00edtica.",
-                "traducao": "A principal habilidade diplom\u00e1tica em jogo \u00e9 a da antecipa\u00e7\u00e3o \u2014 tanto das oportunidades que a IA oferece quanto dos perigos que sua ado\u00e7\u00e3o irrefletida pode trazer. A f\u00e9 cega na tecnologia leva \u00e0 tecnocracia e \u00e0 ren\u00fancia da intelig\u00eancia humana, entregando-se a processos automatizados e distantes, nos quais se perde o controle. Uma \u00e1rea de pol\u00edtica p\u00fablica t\u00e3o relevante quanto as rela\u00e7\u00f5es internacionais \u2014 intimamente ligada a princ\u00edpios de soberania, coopera\u00e7\u00e3o e subsidiariedade \u2014 dificilmente prosperaria e manteria o n\u00edvel de autonomia necess\u00e1rio para honrar sua fun\u00e7\u00e3o p\u00fablica ao servi\u00e7o dos Estados e de seus sistemas intergovernamentais, se cedesse a esses processos. Um novo paradigma de governan\u00e7a digital est\u00e1 se configurando gradualmente, com sucessivas iniciativas normativas de atores internacionais de primeira ordem, representativos de diversos sistemas legais. O debate essencial \u00e9 entre a utilidade da tecnologia e sua neutralidade sociopol\u00edtica.",
+                "texto_original": "La primera habilidad diplomática en juego es la de anticipación, a lo que la IA puede ofrecer como oportunidad y a los peligros que puede envolver su adopción sin miramientos. La fe ciega en la tecnología conduce a tecnocracia y a ceder inteligencia humana, rindiéndose a procesos automatizados y distantes en los que se pierde control. Y un área de política pública tan relevante como la de las relaciones internacionales, íntimamente ligada a principios de soberanía, cooperación y subsidiariedad, poco podría prosperar y mantenerse con el nivel de autonomía necesaria para honrar la función pública para la que fue diseñada al servicio de los Estados y sus sistemas intergubernamentales, si sucumbiera a dichos procesos. Un nuevo paradigma de gobernanza digital se viene configurando con sucesivas aproximaciones desde lo normativo por parte de actores internacionales de primer orden, representativos de diversos sistemas legales. El debate de fondo es entre la utilidad de la tecnología y su neutralidad socio-política.",
+                "traducao": "A principal habilidade diplomática em jogo é a da antecipação — tanto das oportunidades que a IA oferece quanto dos perigos que sua adoção irrefletida pode trazer. A fé cega na tecnologia leva à tecnocracia e à renúncia da inteligência humana, entregando-se a processos automatizados e distantes, nos quais se perde o controle. Uma área de política pública tão relevante quanto as relações internacionais — intimamente ligada a princípios de soberania, cooperação e subsidiariedade — dificilmente prosperaria e manteria o nível de autonomia necessário para honrar sua função pública ao serviço dos Estados e de seus sistemas intergovernamentais, se cedesse a esses processos. Um novo paradigma de governança digital está se configurando gradualmente, com sucessivas iniciativas normativas de atores internacionais de primeira ordem, representativos de diversos sistemas legais. O debate essencial é entre a utilidade da tecnologia e sua neutralidade sociopolítica.",
                 "idioma": "espanhol",
                 "titulo": "Los servicios exteriores en la era de la inteligencia artificial",
                 "visibilidade": "publico"
-            }
+            },
+            "1764780420317"
         ],
-        1,
-        0
+        1852,
+        {
+            "english": 1851,
+            "french": 0,
+            "spanish": 0
+        }
     ],
     [
         "paulohenrique234",
@@ -77,10 +74,10 @@
         "paulo.henriqueb@ufrpe.br",
         [
             {
-                "idioma": "fran\u00e7a",
-                "texto_original": "La diplomatie par Twitter, ou \u00ab twiplomatie \u00bb, a m\u00eame le potentiel de d\u00e9l\u00e9gitimer les canaux traditionnels de la diplomatie.",
-                "traducao": "A diplomacia via Twitter, ou \u201ctwiplomacia\u201d, tem at\u00e9 o potencial de deslegitimar os canais tradicionais da diplomacia.",
-                "titulo": "La diplomatie \u00e0 l\u2019\u00e8re d\u2019internet et des m\u00e9dias sociaux",
+                "idioma": "frança",
+                "texto_original": "La diplomatie par Twitter, ou « twiplomatie », a même le potentiel de délégitimer les canaux traditionnels de la diplomatie.",
+                "traducao": "A diplomacia via Twitter, ou “twiplomacia”, tem até o potencial de deslegitimar os canais tradicionais da diplomacia.",
+                "titulo": "La diplomatie à l’ère d’internet et des médias sociaux",
                 "visibilidade": "privado"
             }
         ],

@@ -29,6 +29,33 @@
         "titulo": "Where do you live?",
         "visibilidade": "publico",
         "paragrafo_numero": 3,
-        "texto_id": "1764703299444"
+        "texto_id": "1764703299444",
+        "likes": [
+            "pauloteste24"
+        ],
+        "comentarios_publicos": [
+            {
+                "autor": "pauloteste24",
+                "texto": "Gosto muito desse trecho desse texto também. S2"
+            }
+        ]
+    },
+    {
+        "id": "1764780420317",
+        "autor": "pauloteste24",
+        "idioma": "english",
+        "texto_original": "I live on a farm in the countryside where there are large fields of green grass and lots of animals.",
+        "traducao": "Eu moro em uma fazenda no campo onde há grandes campos de grama verde e muitos animais.",
+        "titulo": "Where do you live?",
+        "visibilidade": "publico",
+        "paragrafo_numero": 1,
+        "texto_id": "1764780420316",
+        "likes": [],
+        "comentarios_publicos": [
+            {
+                "autor": "pauloteste24",
+                "texto": "Achei interessante"
+            }
+        ]
     }
 ]
